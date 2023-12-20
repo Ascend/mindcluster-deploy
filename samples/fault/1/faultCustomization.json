@@ -8,13 +8,13 @@
       "EventId": ["80E18400", "80E01801"],
       "TimeWindow": 86400,
       "Times": 5,
-      "FaultLevel": "SeparateNPU"
+      "FaultHandling": "SeparateNPU"
     },
     {
-      "EventId": ["80C98008"],
+      "EventId": ["80C98008", "80C98000"],
       "TimeWindow": 86400,
       "Times": 2,
-      "FaultLevel": "ManuallySeparateNPU"
+      "FaultHandling": "ManuallySeparateNPU"
     }
   ],
   "FaultDuration": [
@@ -22,7 +22,7 @@
       "EventId": ["81078603"],
       "FaultTimeout": 30,
       "RecoverTimeout": 60,
-      "FaultLevel": "PreSeparateNPU"
+      "FaultHandling": "PreSeparateNPU"
     }
   ]
 }
