@@ -2,6 +2,7 @@
 
 import os
 import openpyxl
+import argparse
 
 
 def read_excel():
@@ -37,6 +38,10 @@ def get_tor_list(node_list):
 
 
 def handler():
+    parser = argparse.ArgumentParser('传入参数：lld_to_cm.py')
+    parser.add_argument('-n','--num',default='4')
+    args = parser.parse_args()
+    count = args.num
     node_list = read_excel()
     tor_list = get_tor_list(node_list)
     yaml = open("basic-tor-node-cm.yaml", 'w')
@@ -49,7 +54,7 @@ def handler():
     yaml.write("  tor_info: |\n")
     yaml.write("    {\n")
     yaml.write("      \"version\": \"1.0\",\n")
-    yaml.write("      \"tor_count\": 4,\n")
+    yaml.write("      \"tor_count\": " + count + ",\n")
     yaml.write("      \"server_list\": [\n")
     tor_id = 0
     for tor in tor_list:
@@ -79,7 +84,7 @@ def handler():
     yaml.close()
     os.system("kubectl apply -f basic-tor-node-cm.yaml")
     os.system("rm basic-tor-node-cm.yaml")
-    os.system("kubectl get cm -A")
+    os.system("kubectl describe cm -n kube-system basic-tor-node-cm")
 
 if __name__ == '__main__':
     handler()
