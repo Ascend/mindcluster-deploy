@@ -68,6 +68,7 @@ function init() {
   cd /etc/kubernetes/
   rm -rf /etc/kubernetes/mindxdl
   mkdir /etc/kubernetes/mindxdl
+  chmod 750 /etc/kubernetes/mindxdl
   cd mindxdl
 }
 
