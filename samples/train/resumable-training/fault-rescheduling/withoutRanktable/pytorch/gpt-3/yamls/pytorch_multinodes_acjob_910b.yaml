@@ -10,6 +10,7 @@ metadata:
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
+    backoffLimit: 3         # maximum number of global rescheduling times, including the number of rescheduling times upon service plane and non-service plane faults
     schedulingPolicy:      # work when enableGangScheduling is true
       minAvailable: 2
       queue: default
