@@ -55,8 +55,6 @@ spec:
             volumeMounts:
               - name: localtime                  # The container time must be the same as the host time.
                 mountPath: /etc/localtime
-              - name: fault-config
-                mountPath: /user/restore/fault/config
               - name: reset-config
                 mountPath: /user/restore/reset/config
         nodeSelector:
