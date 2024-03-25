@@ -24,7 +24,6 @@ if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
       echo "start training for scheduler"
       env > env.log
       python ${ROOT_PATH}/../train.py --distribute=true --device_num=${device_each_server} --data_url=${data_path} --run_type=train --param_init_type=fp16 --mode=2.6B | tee log
-      done
   else
       echo "Invalid input parameter, usage: main.sh device_count server_count RANK_TABLE_FILE server_id dataset" | tee log
       exit 1
