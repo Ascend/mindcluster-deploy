@@ -122,8 +122,6 @@ spec:
               mountPath: /job/data
             - name: ascend-driver
               mountPath: /usr/local/Ascend/driver
-            - name: ascend-add-ons
-              mountPath: /usr/local/Ascend/add-ons
             - name: dshm
               mountPath: /dev/shm
             - name: localtime
