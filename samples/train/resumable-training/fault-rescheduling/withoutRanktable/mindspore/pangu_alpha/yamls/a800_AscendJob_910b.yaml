@@ -25,7 +25,7 @@ spec:
         spec:
           terminationGracePeriodSeconds: 360
           nodeSelector:                        # modify according to the actual situation
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
@@ -34,7 +34,7 @@ spec:
             command:                           # training command, which can be modified
               - /bin/bash
               - -c
-            args: ["/bin/bash", "-c", "cd /job/code/scripts; bash train_start.sh;"]
+            args: ["cd /job/code/scripts; bash train_start.sh;"]
             ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
               - containerPort: 2222         # determined by user
                 name: ascendjob-port        # do not modify
@@ -91,7 +91,7 @@ spec:
                           - worker
                   topologyKey: kubernetes.io/hostname
           nodeSelector:                    # modify according to the actual situation
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
@@ -106,7 +106,7 @@ spec:
             command:                       # training command, which can be modified
               - /bin/bash
               - -c
-            args: ["/bin/bash", "-c", "cd /job/code/scripts; bash train_start.sh;"]
+            args: ["cd /job/code/scripts; bash train_start.sh;"]
             ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
               - containerPort: 2222         # determined by user
                 name: ascendjob-port        # do not modify

@@ -25,7 +25,7 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           nodeSelector:
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
