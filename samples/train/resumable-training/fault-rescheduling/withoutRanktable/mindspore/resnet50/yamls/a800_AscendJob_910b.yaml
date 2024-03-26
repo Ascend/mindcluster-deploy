@@ -25,7 +25,7 @@ spec:
         spec:
           terminationGracePeriodSeconds: 360
           nodeSelector:                        # modify according to the actual situation
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
@@ -97,7 +97,7 @@ spec:
                           - worker
                   topologyKey: kubernetes.io/hostname
           nodeSelector:                    # modify according to the actual situation
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify

@@ -36,7 +36,7 @@ spec:
                           - default-test-tensorflow
                   topologyKey: kubernetes.io/hostname
           nodeSelector:
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
@@ -111,7 +111,7 @@ spec:
                           - default-test-tensorflow
                   topologyKey: kubernetes.io/hostname
           nodeSelector:
-            host-arch: huawei-arm
+            host-arch: huawei-x86
             accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
