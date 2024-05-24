@@ -147,10 +147,11 @@ spec:
               mountPath: /etc/localtime
             - name: reset-config
               mountPath: /user/restore/reset/config
+              readOnly: true
           volumes:
           - name: reset-config
-            configMap:
-              name: reset-config-default-test-mindspore             # Correspond to the ConfigMap name above.
+            hostPath:
+              path: /user/restore/reset/default.reset-config-default-test-pytorch                # Correspond to the /user/restore/reset/namespace.configmap-name above.
           - name: code
             nfs:
               server: 127.0.0.1
