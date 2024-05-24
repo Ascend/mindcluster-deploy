@@ -44,7 +44,7 @@ spec:
                 mountPath: /etc/localtime
         nodeSelector:
           host-arch: huawei-arm                  # Configure the label based on the actual job.
-          accelerator-type: card-910b-infer      # servers (with Atlas 300I A2 cards)
+          accelerator-type: module-910b-8      # servers (with Atlas 800I A2 cards)
         volumes:
         - name: localtime
           hostPath:
