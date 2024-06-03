@@ -170,6 +170,7 @@ function get_env_for_pytorch_multi_node_job() {
   export HCCL_IF_IP=${XDL_IP}
   first_server_ip=$(get_server_id_0_ip)
   export MASTER_ADDR=${first_server_ip}
+  export MASTER_PORT=7123
   export WORLD_SIZE=${device_count}
   export RANK=${server_id}
   export GPUS_PER_NODE=${device_list_len}
