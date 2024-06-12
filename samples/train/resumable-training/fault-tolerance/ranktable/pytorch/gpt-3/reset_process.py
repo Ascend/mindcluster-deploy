@@ -1,4 +1,5 @@
 import copy
+import json
 import os
 import argparse
 import signal
@@ -240,6 +241,7 @@ class ResetWorker:
         self.recover_rank_list = []
         self.init_pids = pids
         self.new_proc = []
+        self.retry_time = -1
         if self.with_rank:
             self._local_rank = self._init_local_ranks(self.rank_table_path)
         else:
@@ -433,6 +435,7 @@ class ResetWorker:
         self._kill_abnormal_process(self._local_rank)
 
         if self._is_stopped() and self._is_recover():
+            self.retry_time = read_retry_time(self.reset_cm_path)
             self._restore_train_start()
 
     def elastic_recover_process(self):
@@ -466,8 +469,12 @@ class ResetWorker:
         recover_rank_list = self.get_recover_ranks()
         if len(recover_rank_list) != 0:
             logger.info(f"recover rank list is {recover_rank_list}")
-        if self._is_no_fault_happen():
+        new_retry_time = read_retry_time(self.reset_cm_path)
+        if self._is_no_fault_happen() and new_retry_time <= self.retry_time:
             return
+        if read_retry_time(self.reset_cm_path) != -1 and self.retry_time < read_retry_time(self.reset_cm_path):
+            logger.info("will restart process")
+            self.killed_abnormal = False
         logger.info(f"start to process fault")
         if self.recover_mode == 'common':
             self.common_recover_process()
@@ -477,6 +484,26 @@ class ResetWorker:
     def start(self):
         self._sched.add_job(self.reset_npu_process, "interval", seconds=5)
         self._sched.start()
+
+
+def read_retry_time(reset_cm_path):
+    file_path = reset_cm_path
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            if 'RetryTime' in data:
+                return data['RetryTime']
+            else:
+                return -1
+    except FileNotFoundError:
+        logger.error("reset cm path is not exist")
+        return -1
+    except json.JSONDecodeError:
+        logger.error("json failed")
+        return -1
+    except Exception as e:
+        logger.error("unknown err")
+        return -1
 
 
 def is_valid_input_param(args) -> bool:
