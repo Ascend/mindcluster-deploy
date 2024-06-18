@@ -6,17 +6,17 @@ metadata:
     framework: mindspore
     ring-controller.atlas: ascend-910b
   annotations:
-    sp-block: "32"  # when is standalone job it should equal to job req npu, when is distributed job it should be multiple of node npu
+    sp-block: "1"  # when is standalone job it should equal to job req npu, when is distributed job it should be multiple of node npu
 spec:
   schedulerName: volcano    # work when enableGangScheduling is true
   runPolicy:
     schedulingPolicy:       # work when enableGangScheduling is true
-      minAvailable: 2
+      minAvailable: 1
       queue: default
   successPolicy: AllWorkers
   replicaSpecs:
     Worker:
-      replicas: 2
+      replicas: 1
       restartPolicy: Never
       template:
         metadata:
@@ -44,9 +44,9 @@ spec:
                 name: ascendjob-port        # do not modify
             resources:
               limits:
-                huawei.com/Ascend910: 16
+                huawei.com/Ascend910: 1
               requests:
-                huawei.com/Ascend910: 16
+                huawei.com/Ascend910: 1
             volumeMounts:
             - name: code
               mountPath: /job/code
