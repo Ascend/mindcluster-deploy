@@ -191,26 +191,10 @@ check_npu_availability
 export JOB_ID=123456789
 
 
-# 单卡训练场景
-if [ "${device_count}" -eq 1 ] && [ "${server_count}" -eq 1 ]; then
-  server_id=0
-  ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} 2>&1 && tee ${output_url}/log
-  check_return_code
-  if [[ $@ =~ need_freeze ]]; then
-    ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${freeze_cmd} 2>&1 && tee ${output_url}/log
-    check_return_code
-  fi
-  chmod 440 ${output_url}/log
-  exit ${ret_code}
-fi
-
-# 分布式场景
-if [[ "${device_count}" -ge 1 ]]; then
-  server_id=${RANK}
-  logger "server id is: ""${server_id}"
-  DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
-  ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.launch $DISTRIBUTED_ARGS ${boot_file_path}${boot_file} ${train_param} && tee ${output_url}/log
-  check_return_code
-fi
+server_id=${RANK}
+logger "server id is: ""${server_id}"
+DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
+${DLS_PROGRAM_EXECUTOR} -m torch.distributed.launch $DISTRIBUTED_ARGS ${boot_file_path}${boot_file} ${train_param} 2>&1 | tee ${output_url}/log
+check_return_code
 
 chmod 440 ${output_url}

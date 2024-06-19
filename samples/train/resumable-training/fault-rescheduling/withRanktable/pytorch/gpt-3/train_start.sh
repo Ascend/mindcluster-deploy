@@ -219,7 +219,7 @@ if [[ "${server_count}" -ge 1 ]]; then
   if [ "${framework}" == "PyTorch" ]; then
     get_env_for_pytorch_multi_node_job
     DISTRIBUTED_ARGS="--nproc_per_node $GPUS_PER_NODE --nnodes $NNODES --node_rank $NODE_RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
-    ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.launch $DISTRIBUTED_ARGS ${boot_file_path}${boot_file} ${train_param}  && tee ${output_url}/log
+    ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.launch $DISTRIBUTED_ARGS ${boot_file_path}${boot_file} ${train_param} 2>&1 | tee ${output_url}/log
 
     check_return_code
   else

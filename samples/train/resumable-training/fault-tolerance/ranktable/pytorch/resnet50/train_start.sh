@@ -147,7 +147,6 @@ fi
 
 function get_env_for_pytorch_multi_node_job() {
   export JOB_ID=123456789
-  rankid=$((rank_start + i))
   export RANK_TABLE_FILE=/user/serverid/devindex/config/hccl.json
   #将Host日志输出到串口,0-关闭/1-开启
   export ASCEND_SLOG_PRINT_TO_STDOUT=0
@@ -163,8 +162,9 @@ function get_env_for_pytorch_multi_node_job() {
   export MASTER_ADDR=${first_server_ip}
   export WORLD_SIZE=${server_count}
   export RANK=${server_id}
-  export RANK_ID=${rankid}
   export RANK_SIZE=$((device_count / server_count))
+  export MASTER_PORT=7123
+  export LOCAL_WORLD_SIZE=$((device_count / server_count))
 }
 
 DLS_PROGRAM_EXECUTOR="$(dls_get_executor "$boot_file")"
@@ -186,40 +186,13 @@ if [[ "${server_count}" -ge 1 ]]; then
 
   logger "server id is: ""${server_id}"
   if [ "${framework}" == "PyTorch" ]; then
-    # CPU core number
-    core_num=`cat /proc/cpuinfo | grep "processor" | wc -l`
-    device_each_server=$((device_count / server_count))
-    rank_start=$((device_each_server * server_id))
-    for ((i = $((device_each_server - 1)); i >= 0; i--)); do
-      get_env_for_pytorch_multi_node_job
-      export DEVICE_ID=${i}
-      logger "start training for device ${DEVICE_ID}"
-      # set bing range, like:0-11
-      core_range="$((i*${core_num}/${device_each_server}))-$(((i+1)*${core_num}/${device_each_server}-1))"
-      taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${DEVICE_ID} --multiprocessing-distributed --addr=${MASTER_ADDR} --world-size=${WORLD_SIZE} --rank=${RANK} &> ${output_url}/device_${RANK_ID}.log &
-      train_pids[$i]=$!
-    done
+    get_env_for_pytorch_multi_node_job
+    DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
+    ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.run $DISTRIBUTED_ARGS  ${boot_file_path}${boot_file} ${train_param}  --multiprocessing-distributed  --world-size=${server_count} --rank=${RANK} 2>&1 | tee ${output_url}/device.log
+    check_return_code
   else
     logger "framework error"
   fi
 fi
 
 chmod 440 "${output_url}"
-tail -f "${output_url}"/device_${RANK_ID}.log &
-old_log_pid=$!
-python -u "${DLS_USER_HOME_DIR}"/reset_process.py -p "${train_pids[@]}" &
-reset_pid=$!
-wait ${train_pids[0]}
-exit_code=$?
-if [ ${exit_code} -eq 0 ]; then
-  kill -15 ${reset_pid}
-  echo "training finished."
-  exit ${exit_code}
-else
-  if [ -d "${DLS_USER_HOME_DIR}"/ ]; then
-    touch "${DLS_USER_HOME_DIR}"/newlog
-    tail -f "${DLS_USER_HOME_DIR}"/newlog &
-  fi
-  kill -9 ${old_log_pid}
-  wait ${reset_pid}
-fi

@@ -169,6 +169,7 @@ function get_env_for_1p_job() {
   export ASCEND_DEVICE_ID=${DEVICE_ID}
   export RANK_ID=0
   export RANK_SIZE=1
+  export LOCAL_WORLD_SIZE=1
   export DEVICE_INDEX=${RANK_ID}
   export JOB_ID=123456789
   export RANK=${server_id}
@@ -177,7 +178,6 @@ function get_env_for_1p_job() {
 
 function get_env_for_pytorch_multi_node_job() {
   export JOB_ID=123456789
-  rankid=$((rank_start + i))
   export RANK_TABLE_FILE=/user/serverid/devindex/config/hccl.json
   #将Host日志输出到串口,0-关闭/1-开启
   export ASCEND_SLOG_PRINT_TO_STDOUT=0
@@ -193,8 +193,9 @@ function get_env_for_pytorch_multi_node_job() {
   export MASTER_ADDR=${first_server_ip}
   export WORLD_SIZE=${server_count}
   export RANK=${server_id}
-  export RANK_ID=${rankid}
   export RANK_SIZE=$((device_count / server_count))
+  export MASTER_PORT=7123
+  export LOCAL_WORLD_SIZE=$((device_count / server_count))
 }
 
 function check_return_code() {
@@ -218,10 +219,8 @@ if [[ "${server_count}" -eq 1 ]]; then
   if [ "${device_count}" -eq 1 ]; then
     get_env_for_1p_job
     if [ "${framework}" == "PyTorch" ]; then
-      ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} --gpu=${ASCEND_DEVICE_ID} --rank=${RANK} ${train_param} 2>&1 && tee ${output_url}/log
-      check_return_code
-    else
-      ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --rank=${RANK} 2>&1 && tee ${output_url}/log
+      DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
+      ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.run $DISTRIBUTED_ARGS  ${boot_file_path}${boot_file} ${train_param}  --multiprocessing-distributed  --world-size=${server_count} --rank=${RANK} 2>&1 | tee ${output_url}/device.log
       check_return_code
     fi
     chmod 440 ${output_url}
@@ -240,25 +239,11 @@ if [[ "${server_count}" -ge 1 ]]; then
 
   logger "server id is: ""${server_id}"
   if [ "${framework}" == "PyTorch" ]; then
-
-    # CPU core number
-    core_num=`cat /proc/cpuinfo | grep "processor" | wc -l`
-    device_each_server=$((device_count / server_count))
-    rank_start=$((device_each_server * server_id))
-    for ((i = $((device_each_server - 1)); i >= 0; i--)); do
-      get_env_for_pytorch_multi_node_job
-      export DEVICE_ID=${i}
-      logger "start training for device ${DEVICE_ID}"
-      # set bing range, like:0-11
-      core_range="$((i*${core_num}/${device_each_server}))-$(((i+1)*${core_num}/${device_each_server}-1))"
-      if [ "${i}" -eq 0 ]; then
-          taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${DEVICE_ID} --multiprocessing-distributed --addr=${MASTER_ADDR} --world-size=${WORLD_SIZE} --rank=${RANK} && tee ${output_url}/device_${RANK_ID}.log
-          check_return_code
-      else
-          taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${DEVICE_ID} --multiprocessing-distributed --addr=${MASTER_ADDR} --world-size=${WORLD_SIZE} --rank=${RANK} &>> ${output_url}/device_${RANK_ID}.log &
-          check_return_code
-      fi
-    done
+    get_env_for_pytorch_multi_node_job
+    logger "start training for device ${DEVICE_ID}"
+    DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
+    ${DLS_PROGRAM_EXECUTOR} -m torch.distributed.run $DISTRIBUTED_ARGS  ${boot_file_path}${boot_file} ${train_param}  --multiprocessing-distributed  --world-size=${server_count} --rank=${RANK} 2>&1 | tee ${output_url}/device.log
+    check_return_code
   else
     logger "framework error"
   fi

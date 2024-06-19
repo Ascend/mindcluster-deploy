@@ -190,31 +190,10 @@ check_npu_availability
 export JOB_ID=123456789
 export RANK_SIZE=${device_count}
 
-# 单卡训练场景
-if [ "${device_count}" -eq 1 ] && [ "${server_count}" -eq 1 ]; then
-  device_id=0
-  ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} --gpu=${device_id} --rank=${RANK} ${train_param} 2>&1 && tee ${output_url}/log
-  check_return_code
-  chmod 440 ${output_url}/log
-  exit ${ret_code}
-fi
-
-# 分布式场景
-if [[ "${device_count}" -ge 1 ]]; then
-  server_id=${RANK}
-  logger "server id is: ""${server_id}"
-  rank_start=`expr ${RANK} \* ${LOCAL_WORLD_SIZE}`
-  for ((i = $((${LOCAL_WORLD_SIZE} - 1)); i >= 0; i--)); do
-    export DEVICE_INDEX=`expr ${rank_start} + ${i}`
-    export ASCEND_DEVICE_ID=${i}
-    if [[ "${i}" -eq 0 ]]; then
-      ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${ASCEND_DEVICE_ID} --multiprocessing-distributed --addr=${MASTER_ADDR} --world-size=${server_count} --rank=${RANK} 2>&1 && tee ${output_url}/device_${DEVICE_INDEX}.log
-      check_return_code
-    else
-      ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${ASCEND_DEVICE_ID} --multiprocessing-distributed --addr=${MASTER_ADDR} --world-size=${server_count} --rank=${RANK} &> ${output_url}/device_${DEVICE_INDEX}.log &
-      check_return_code
-    fi
-  done
-fi
+server_id=${RANK}
+logger "server id is: ""${server_id}"
+DISTRIBUTED_ARGS="--nproc_per_node $LOCAL_WORLD_SIZE --nnodes $server_count --node_rank $RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
+${DLS_PROGRAM_EXECUTOR} -m torch.distributed.run $DISTRIBUTED_ARGS  ${boot_file_path}${boot_file} ${train_param}  --multiprocessing-distributed  --world-size=${server_count} --rank=${RANK} 2>&1 | tee ${output_url}/device.log
+check_return_code
 
 chmod 440 ${output_url}
