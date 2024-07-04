@@ -23,7 +23,7 @@ from mindx_elastic.validator.validators import FileValidator, DirectoryValidator
 
 logger = logging.getLogger('recover_logger')
 logger.setLevel(logging.INFO)
-pattern = re.compile(r'^[a-z0-9]+[a-z0-9\-]*[a-z0-9]+$')
+pattern = re.compile(r'^[a-z0-9]+[a-z0-9\-.]*[a-z0-9]+$')
 MAX_STR_LEN = 1024
 
 
@@ -241,7 +241,7 @@ class ResetWorker:
         self.recover_rank_list = []
         self.init_pids = pids
         self.new_proc = []
-        self.retry_time = -1
+        self.retry_time = read_retry_time(self.reset_cm_path)
         if self.with_rank:
             self._local_rank = self._init_local_ranks(self.rank_table_path)
         else:
@@ -494,16 +494,16 @@ def read_retry_time(reset_cm_path):
             if 'RetryTime' in data:
                 return data['RetryTime']
             else:
-                return -1
+                return 0
     except FileNotFoundError:
         logger.error("reset cm path is not exist")
-        return -1
+        return 0
     except json.JSONDecodeError:
         logger.error("json failed")
-        return -1
+        return 0
     except Exception as e:
         logger.error("unknown err")
-        return -1
+        return 0
 
 
 def is_valid_input_param(args) -> bool:
