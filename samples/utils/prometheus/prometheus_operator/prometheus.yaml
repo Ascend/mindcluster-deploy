@@ -1,0 +1,92 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:                   # Labels of the prometheus service.
+    app: prometheus
+  name: prometheus          # Name of the prometheus service.
+  namespace: kube-system    # Namespace of the prometheus service.
+spec:
+  type: NodePort
+  ports:
+  - port: 9090
+    targetPort: 9090
+    nodePort: 30003
+  selector:                 # Matching labels, it should match the labels of the prometheus.
+    app: prometheus
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: kube-system
+spec:
+  nodeSelector:
+    masterselector: dls-master-node
+  baseImage: quay.io/prometheus/prometheus                  # Image name of prometheus
+  logLevel: info
+  podMetadata:
+    annotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+    labels:
+      app: prometheus                      # Labels of the prometheus.
+  replicas: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  retention: 12h
+  serviceAccountName: prometheus-service-account
+  serviceMonitorSelector:
+    matchLabels:                           # Matching labels, it should match the labels of the prometheus ServiceMonitor.
+      serviceMonitorSelector: prometheus
+  version: v2.22.1                         # Image version of prometheus
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "prometheus-service-account"
+  namespace: "kube-system"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "prometheus-cluster-role"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/metrics
+  verbs:
+  - get
+- nonResourceURLs:
+  - "/metrics"
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "prometheus-cluster-role-binding"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "prometheus-cluster-role"
+subjects:
+- kind: ServiceAccount
+  name: "prometheus-service-account"
+  namespace: kube-system
+

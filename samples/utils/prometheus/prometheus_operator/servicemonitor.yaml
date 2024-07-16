@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:                                            # Labels of the prometheus ServiceMonitor.
+    serviceMonitorSelector: prometheus
+  name: prometheus-servicemonitor-npu-exporter       # Name of prometheus ServiceMonitor.
+  namespace: kube-system                             # Namespace of prometheus ServiceMonitor.
+spec:
+  endpoints:
+  - interval: 10s
+    targetPort: 8082                                 # Port of the npu-exporter service, it should be the same as the port that the service of npu-exporter is listening on.
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - npu-exporter                                   # Matching namespace, it should match the namespace of the npu-exporter service.
+  selector:
+    matchLabels:                                     # Matching labels, it should match the labels of the npu-exporter service.
+      app: npu-exporter-svc
