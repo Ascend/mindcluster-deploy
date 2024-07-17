@@ -3,7 +3,7 @@ kind: ServiceMonitor
 metadata:
   labels:                                            # Labels of the prometheus ServiceMonitor.
     serviceMonitorSelector: prometheus
-  name: prometheus-npu-exporter                      # Name of prometheus ServiceMonitor.
+  name: npu-exporter                      # Name of prometheus ServiceMonitor.
   namespace: kube-system                             # Namespace of prometheus ServiceMonitor.
 spec:
   endpoints:
