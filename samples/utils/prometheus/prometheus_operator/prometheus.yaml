@@ -22,7 +22,7 @@ metadata:
 spec:
   nodeSelector:
     masterselector: dls-master-node
-  baseImage: quay.io/prometheus/prometheus                  # Image name of prometheus
+  image: quay.io/prometheus/prometheus:v2.22.1
   logLevel: info
   podMetadata:
     annotations:
@@ -42,7 +42,6 @@ spec:
   serviceMonitorSelector:
     matchLabels:                           # Matching labels, it should match the labels of the prometheus ServiceMonitor.
       serviceMonitorSelector: prometheus
-  version: v2.22.1                         # Image version of prometheus
 ---
 apiVersion: v1
 kind: ServiceAccount
