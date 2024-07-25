@@ -35,7 +35,8 @@ spec:
             image: tensorflow-test:latest     # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
-            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+            # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
             - name: ASCEND_VISIBLE_DEVICES
               valueFrom:
                 fieldRef:
@@ -105,7 +106,8 @@ spec:
             image: tensorflow-test:latest          # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
-            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
             - name: ASCEND_VISIBLE_DEVICES
               valueFrom:
                 fieldRef:

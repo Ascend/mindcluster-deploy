@@ -40,7 +40,8 @@ spec:
                 valueFrom:
                   fieldRef:
                     fieldPath: status.hostIP
-              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+              # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
               - name: ASCEND_VISIBLE_DEVICES
                 valueFrom:
                   fieldRef:
@@ -119,7 +120,8 @@ spec:
                 valueFrom:
                   fieldRef:
                     fieldPath: status.hostIP
-              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
               - name: ASCEND_VISIBLE_DEVICES
                 valueFrom:
                   fieldRef:
