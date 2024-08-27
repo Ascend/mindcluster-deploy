@@ -378,12 +378,32 @@ class ResetWorker:
     def _restore_train_start(self):
         new_pids = []
         try:
+            self.wait_for_completion()
             new_pids, self.new_proc = self._process_manager.restore_train_process()
         except Exception as e:
             logger.error(f"an unexpected error {e} occur when recover process")
             self.exit_recover_process()
 
         self._reset_all_status(new_pids)
+    
+    def wait_for_completion(self, timeout=90):
+        if not check_input_file(self.rank_table_path):
+            logger.error("invalid rank table patch")
+            return
+        start_time = time.time()
+        while True:
+            with open(self.rank_table_path,'r') as file:
+                data = json.load(file)
+                if data.get('status') == 'completed':
+                    logger.info("hccl has completed")
+                    return True
+            logger.info("hccl.json is not completed yes")
+            time.sleep(1)
+
+            if time.time() - start_time > timeout:
+                logger.info("wait for complete timeout")
+                break
+        return False
 
     def _is_cur_node(self) -> bool:
         for rank in self.fault_rank_list:
