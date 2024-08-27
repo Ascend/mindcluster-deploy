@@ -389,7 +389,7 @@ class ResetWorker:
     def wait_for_completion(self, timeout=90):
         if not check_input_file(self.rank_table_path):
             logger.error("invalid rank table patch")
-            return
+            return True
         start_time = time.time()
         while True:
             with open(self.rank_table_path,'r') as file:
