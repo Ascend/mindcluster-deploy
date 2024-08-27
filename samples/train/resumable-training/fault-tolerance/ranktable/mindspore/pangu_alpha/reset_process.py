@@ -392,7 +392,7 @@ class ResetWorker:
             return True
         start_time = time.time()
         while True:
-            with open(self.rank_table_path,'r') as file:
+            with open(self.rank_table_path, 'r') as file:
                 data = json.load(file)
                 if data.get('status') == 'completed':
                     logger.info("hccl has completed")
