@@ -102,7 +102,7 @@ spec:
               medium: Memory
           - name: ranktable
             hostPath:
-              path: /user/mindx-dl/ranktable/default.default-test-pytorch  # need pattern: shared-dir/job-namespace.job-name
+              path: /user/mindx-dl/ranktable/default.default-test-pytorch  # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
           - name: localtime
             hostPath:
               path: /etc/localtime
@@ -194,7 +194,7 @@ spec:
               medium: Memory
           - name: ranktable
             hostPath:
-              path: /user/mindx-dl/ranktable/default.default-test-pytorch # need pattern: shared-dir/job-namespace.job-name
+              path: /user/mindx-dl/ranktable/default.default-test-pytorch # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
           - name: localtime
             hostPath:
               path: /etc/localtime
