@@ -74,7 +74,7 @@ spec:
               mountPath: /usr/local/Ascend/add-ons
             - name: dshm
               mountPath: /dev/shm
-            - name: ranktable
+            - name: ranktable                            # if ranktable is needed please set volume
               mountPath: /user/serverid/devindex/config
             - name: localtime
               mountPath: /etc/localtime
@@ -166,7 +166,7 @@ spec:
               mountPath: /usr/local/Ascend/add-ons
             - name: dshm
               mountPath: /dev/shm
-            - name: ranktable
+            - name: ranktable                           # if ranktable is needed please set volume
               mountPath: /user/serverid/devindex/config
             - name: localtime
               mountPath: /etc/localtime
