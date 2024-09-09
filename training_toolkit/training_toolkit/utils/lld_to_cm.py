@@ -40,8 +40,10 @@ def get_tor_list(node_list):
 def handler():
     parser = argparse.ArgumentParser('传入参数：lld_to_cm.py')
     parser.add_argument('-n','--num',default='4')
+    parser.add_argument('-l', '--level', default='double_layer')
     args = parser.parse_args()
     count = args.num
+    level = args.level
     node_list = read_excel()
     tor_list = get_tor_list(node_list)
     yaml = open("basic-tor-node-cm.yaml", 'w')
@@ -51,6 +53,7 @@ def handler():
     yaml.write("  name: basic-tor-node-cm\n")
     yaml.write("  namespace: kube-system\n")
     yaml.write("data:\n")
+    yaml.write("  tor_level: '" + level + "'\n")
     yaml.write("  tor_info: |\n")
     yaml.write("    {\n")
     yaml.write("      \"version\": \"1.0\",\n")
