@@ -1,0 +1,158 @@
+apiVersion: mindxdl.gitee.com/v1
+kind: AscendJob
+metadata:
+  name: default-infer-test-pytorch-310p
+  labels:
+    npu-310-strategy: card        # select the 300I duo scheduling policy. If choose to schedule by chip, change it to chip.
+    distributed: "false"           # select distributed scheduling policy, if choose not distributed, change it to "false"
+    duo: "true"                   # select use 300I duo card, if not, change it to "false"
+    framework: pytorch
+    ring-controller.atlas: ascend-310P
+spec:
+  schedulerName: volcano   # work when enableGangScheduling is true
+  runPolicy:
+    schedulingPolicy:      # work when enableGangScheduling is true
+      minAvailable: 2
+      queue: default
+  successPolicy: AllWorkers
+  replicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        spec:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: job-name
+                        operator: In
+                        values:
+                          - default-infer-test-pytorch-310p
+                  topologyKey: kubernetes.io/hostname
+          nodeSelector:
+            host-arch: huawei-arm
+          containers:
+            - name: ascend # do not modify
+              image: pytorch-test:latest         # infer framework image， which can be modified
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.hostIP
+                # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+                - name: ASCEND_VISIBLE_DEVICES
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['huawei.com/Ascend310P']               # The value must be the same as resources.requests
+              command:                           # training command, which can be modified
+                - /bin/bash
+                - -c
+              args: [ "./infer.sh" ]
+              ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
+                - containerPort: 2222         # determined by user
+                  name: ascendjob-port        # do not modify
+              resources:
+                limits:
+                  huawei.com/Ascend310P: 2
+                requests:
+                  huawei.com/Ascend310P: 2
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: ascend-add-ons
+                  mountPath: /usr/local/Ascend/add-ons
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: ranktable                            # if ranktable is needed please set volume
+                  mountPath: /user/serverid/devindex/config
+                - name: localtime
+                  mountPath: /etc/localtime
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: ascend-add-ons
+              hostPath:
+                path: /usr/local/Ascend/add-ons
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: ranktable
+              hostPath:
+                path: /user/mindx-dl/ranktable/default.default-infer-test-pytorch-310p  # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
+    Worker:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        spec:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: job-name
+                        operator: In
+                        values:
+                          - default-infer-test-pytorch-310p
+                  topologyKey: kubernetes.io/hostname
+          nodeSelector:
+            host-arch: huawei-arm
+          containers:
+            - name: ascend # do not modify
+              image: pytorch-test:latest                # trainning framework image， which can be modified
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.hostIP
+                # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. please delete it when in the static vNPU scheduling scene or without volcano.
+                - name: ASCEND_VISIBLE_DEVICES
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['huawei.com/Ascend310P']               # The value must be the same as resources.requests
+              command:                                  # training command, which can be modified
+                - /bin/bash
+                - -c
+              args: [ "./infer.sh" ]
+              ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
+                - containerPort: 2222         # determined by user
+                  name: ascendjob-port        # do not modify
+              resources:
+                limits:
+                  huawei.com/Ascend310P: 2
+                requests:
+                  huawei.com/Ascend310P: 2
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: ascend-add-ons
+                  mountPath: /usr/local/Ascend/add-ons
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: ranktable                           # if ranktable is needed please set volume
+                  mountPath: /user/serverid/devindex/config
+                - name: localtime
+                  mountPath: /etc/localtime
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: ascend-add-ons
+              hostPath:
+                path: /usr/local/Ascend/add-ons
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: ranktable
+              hostPath:
+                path: /user/mindx-dl/ranktable/default.default-infer-test-pytorch-310p # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
