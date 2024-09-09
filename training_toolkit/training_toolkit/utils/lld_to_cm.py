@@ -40,7 +40,7 @@ def get_tor_list(node_list):
 def handler():
     parser = argparse.ArgumentParser('传入参数：lld_to_cm.py')
     parser.add_argument('-n','--num',default='4')
-    parser.add_argument('-l','--level',default='double_layer')
+    parser.add_argument('-l', '--level', default='double_layer')
     args = parser.parse_args()
     count = args.num
     level = args.level
