@@ -64,7 +64,7 @@ collect_tool
 
 **1、运行说明**
 
-`bash npu_info_collect.sh {SAVE_FILE}`
+`bash npu_info_collect.sh {SAVE_FILE} {NPU_NUM} {CHIP_NUM}`
 
 示例：
 ```
@@ -76,7 +76,11 @@ bash npu_info_collect.sh /xx/enviornment_check/worker-0/npu_info_after.txt
 
 **2、参数说明**
 
-{SAVE_FILE}：保存文件。
+`{SAVE_FILE}`：保存文件。
+
+`{NPU_NUM}`：npu卡数，默认值为8。
+
+`{CHIP_NUM}`：每个NPU内芯片的数量，默认值为1。
 
 --------
 
