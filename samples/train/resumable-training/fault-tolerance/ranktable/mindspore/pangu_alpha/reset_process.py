@@ -237,6 +237,8 @@ class ResetWorker:
         self.with_rank = with_rank
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
+        self.rank_table_version_path = "/user/serverid/devindex/config/version"
+        self.version = -1
         self.fault_rank_list = []
         self.recover_rank_list = []
         self.init_pids = pids
@@ -396,7 +398,12 @@ class ResetWorker:
                 data = json.load(file)
                 if data.get('status') == 'completed':
                     logger.info("hccl has completed")
-                    return True
+                    with open(self.rank_table_version_path, "r") as f:
+                        version = f.readline()
+                        logger.info(f"hccl.json version is {version}, last version is {self.version}")
+                        if int(version) > self.version:
+                            self.version = int(version)
+                            return True
             logger.info("hccl.json is not completed yes")
             time.sleep(1)
 
