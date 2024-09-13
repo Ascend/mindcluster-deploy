@@ -238,7 +238,7 @@ class ResetWorker:
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
         self.rank_table_version_path = "/user/serverid/devindex/config/version"
-        self.version = -1
+        self.version = 0
         self.fault_rank_list = []
         self.recover_rank_list = []
         self.init_pids = pids
