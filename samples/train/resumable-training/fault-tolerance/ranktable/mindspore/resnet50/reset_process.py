@@ -392,17 +392,28 @@ class ResetWorker:
             return True
         start_time = time.time()
         while True:
-            with open(self.rank_table_path, 'r') as file:
-                data = json.load(file)
-                if data.get('status') == 'completed':
-                    logger.info("hccl has completed")
-                    return True
-            logger.info("hccl.json is not completed yes")
+            if self._is_ranktable_completed():
+                return True
+            logger.info("hccl.json is not satisfied")
             time.sleep(1)
 
             if time.time() - start_time > timeout:
                 logger.info("wait for complete timeout")
                 break
+        return False
+
+    def _is_ranktable_completed(self):
+        with open(self.rank_table_path, 'r') as file:
+            data = json.load(file)
+            if data.get('status') != 'completed':
+                return False
+            logger.info("hccl has completed")
+            with open(self.rank_table_version_path, "r") as f:
+                version = f.readline()
+                logger.info(f"hccl.json version is {version}, last version is {self.version}")
+                if int(version) > self.version:
+                    self.version = int(version)
+                    return True
         return False
 
     def _is_cur_node(self) -> bool:
