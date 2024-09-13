@@ -410,7 +410,7 @@ class ResetWorker:
             if data.get('status') != 'completed':
                 return False
             logger.info("hccl has completed")
-            if not check_input_file(self.rank_table_path):
+            if not check_input_file(self.rank_table_version_path):
                 logger.info("invalid rank table version path")
                 return True
             with open(self.rank_table_version_path, "r") as f:
