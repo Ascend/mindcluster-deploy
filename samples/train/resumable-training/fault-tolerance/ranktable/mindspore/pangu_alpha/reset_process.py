@@ -390,7 +390,7 @@ class ResetWorker:
     
     def wait_for_completion(self, timeout=90):
         if not check_input_file(self.rank_table_path):
-            logger.error("invalid rank table patch")
+            logger.error("invalid rank table path")
             return True
         start_time = time.time()
         while True:
@@ -410,6 +410,9 @@ class ResetWorker:
             if data.get('status') != 'completed':
                 return False
             logger.info("hccl has completed")
+            if not check_input_file(self.rank_table_path):
+                logger.info("invalid rank table version path")
+                return True
             with open(self.rank_table_version_path, "r") as f:
                 version = f.readline()
                 logger.info(f"hccl.json version is {version}, last version is {self.version}")
