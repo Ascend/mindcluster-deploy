@@ -237,6 +237,8 @@ class ResetWorker:
         self.with_rank = with_rank
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
+        self.rank_table_version_path = "/user/serverid/devindex/config/version"
+        self.version = 0
         self.fault_rank_list = []
         self.recover_rank_list = []
         self.init_pids = pids
@@ -388,21 +390,35 @@ class ResetWorker:
     
     def wait_for_completion(self, timeout=90):
         if not check_input_file(self.rank_table_path):
-            logger.error("invalid rank table patch")
+            logger.error("invalid rank table path")
             return True
         start_time = time.time()
         while True:
-            with open(self.rank_table_path, 'r') as file:
-                data = json.load(file)
-                if data.get('status') == 'completed':
-                    logger.info("hccl has completed")
-                    return True
-            logger.info("hccl.json is not completed yes")
+            if self._is_ranktable_completed():
+                return True
+            logger.info("hccl.json is not satisfied")
             time.sleep(1)
 
             if time.time() - start_time > timeout:
                 logger.info("wait for complete timeout")
                 break
+        return False
+
+    def _is_ranktable_completed(self):
+        with open(self.rank_table_path, 'r') as file:
+            data = json.load(file)
+            if data.get('status') != 'completed':
+                return False
+            logger.info("hccl has completed")
+            if not check_input_file(self.rank_table_version_path):
+                logger.info("invalid rank table version path")
+                return True
+            with open(self.rank_table_version_path, "r") as f:
+                version = f.readline()
+                logger.info(f"hccl.json version is {version}, last version is {self.version}")
+                if int(version) > self.version:
+                    self.version = int(version)
+                    return True
         return False
 
     def _is_cur_node(self) -> bool:
