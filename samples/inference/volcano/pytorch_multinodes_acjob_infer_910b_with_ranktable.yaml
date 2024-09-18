@@ -5,6 +5,7 @@ metadata:
   labels:
     framework: pytorch
     ring-controller.atlas: ascend-910b
+    fault-scheduling: "force"
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
