@@ -8,6 +8,7 @@ metadata:
     duo: "true"                   # select use 300I duo card, if not, change it to "false"
     framework: pytorch
     ring-controller.atlas: ascend-310P
+    fault-scheduling: "force"
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
