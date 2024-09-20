@@ -238,7 +238,7 @@ class ResetWorker:
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
         self.rank_table_version_path = "/user/serverid/devindex/config/version"
-        self.version = 0
+        self.version = -1
         self.fault_rank_list = []
         self.recover_rank_list = []
         self.init_pids = pids
@@ -494,6 +494,7 @@ class ResetWorker:
 
         if self._is_stopped() and self._is_recover():
             logger.info("start to recover all process ")
+            self.retry_time = read_retry_time(self.reset_cm_path)
             self._restore_train_start()
 
     def reset_npu_process(self):
