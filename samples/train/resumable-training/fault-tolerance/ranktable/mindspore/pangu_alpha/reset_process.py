@@ -236,6 +236,7 @@ class ResetWorker:
         self.stopped_normal = False
         self.with_rank = with_rank
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
+        self.restart_type_path = "/user/restore/reset/config/restart-type"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
         self.rank_table_version_path = "/user/serverid/devindex/config/version"
         self.version = -1
@@ -413,6 +414,12 @@ class ResetWorker:
             if not check_input_file(self.rank_table_version_path):
                 logger.info("invalid rank table version path")
                 return True
+            if check_input_file(self.restart_type_path): # todo 如果没有这个文件
+                with open(self.restart_type_path) as rf:
+                    restart_type = rf.readline()
+                    logger.info(f"restart type is {restart_type}")
+                    if restart_type == "hot-reset":
+                        return True
             with open(self.rank_table_version_path, "r") as f:
                 version = f.readline()
                 logger.info(f"hccl.json version is {version}, last version is {self.version}")
