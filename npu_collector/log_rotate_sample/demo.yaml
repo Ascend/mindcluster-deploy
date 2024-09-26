@@ -1,0 +1,46 @@
+# 其他配置项
+spec:
+  schedulerName: volcano
+  tasks:
+  - name: "default-test"
+    template:
+      spec:
+        containers:
+        - image: ${镜像名}
+          env:
+          # GROUP_NAME环境变量，作为训练任务标识
+          - name: GROUP_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.annotations['scheduling.k8s.io/group-name']
+          # HOST_IP环境变量，计算节点IP，作为计算节点标识
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          # ASCEND_LOG_ROTATE_SCRIPT_DIR环境变量，日志转储执行脚本POD内挂载目录
+          - name: ASCEND_LOG_ROTATE_SCRIPT_DIR
+            value: "/var/log/ascend_log/script"
+          command:
+          - "/bin/bash"
+          - "-c"
+          - |        
+            source /var/log/ascend_log/script/ascend_log_rotate.sh 1
+            bash ${训练启动脚本}
+            source /var/log/ascend_log/script/ascend_log_rotate.sh 0
+          # ascend_log_rotate.sh： 执行转储配置
+          volumeMounts:
+              # 映射到容器目录
+              - name: ascend-log-path
+                mountPath: /var/log/ascend_log
+              - name: host-log-path
+                mountPath: /var/log/messages
+          volumes:
+              # 挂载计算节点本地存储目录
+              # 部分服务器的OS日志为syslog，根据实际情况调整/var/log/messages为/var/log/syslog
+              - name: ascend-log-path
+                hostPath:
+                  path: /var/log/ascend_log
+              - name: host-log-path
+                hostPath:
+                  path: /var/log/messages
