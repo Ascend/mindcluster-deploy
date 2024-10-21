@@ -17,9 +17,53 @@ echo "/usr/local/bin/npu-smi info">>"${save_file}"
 /usr/local/bin/npu-smi info>>"${save_file}"
 echo -e "\n">>"${save_file}"
 
+if [ -e "/usr/local/Ascend/driver/version.info" ]; then
+  echo "cat /usr/local/Ascend/driver/version.info">>"${save_file}"
+  cat /usr/local/Ascend/driver/version.info>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+fi
 
-echo "cat /usr/local/Ascend/driver/version.info">>"${save_file}"
-cat /usr/local/Ascend/driver/version.info>>"${save_file}"
+
+if [ -e "/usr/local/Ascend/firmware/version.info" ]; then
+  echo "cat /usr/local/Ascend/firmware/version.info">>"${save_file}"
+  cat /usr/local/Ascend/firmware/version.info>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+fi
+
+
+if [ -e "/usr/local/Ascend/nnae/latest/ascend_nnae_install.info" ]; then
+  echo "cat /usr/local/Ascend/nnae/latest/ascend_nnae_install.info">>"${save_file}"
+  cat /usr/local/Ascend/nnae/latest/ascend_nnae_install.info>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+fi
+
+
+if [ -e "/usr/local/Ascend/ascend-toolkit/latest/aarch64-linux/ascend_toolkit_install.info" ]; then
+  echo "cat /usr/local/Ascend/ascend-toolkit/latest/aarch64-linux/ascend_toolkit_install.info">>"${save_file}"
+  cat /usr/local/Ascend/ascend-toolkit/latest/aarch64-linux/ascend_toolkit_install.info>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+fi
+
+
+if [ -e "/usr/local/Ascend/ascend-toolkit/latest/x86_84-linux/ascend_toolkit_install.info" ]; then
+  echo "cat /usr/local/Ascend/ascend-toolkit/latest/x86_84-linux/ascend_toolkit_install.info">>"${save_file}"
+  cat /usr/local/Ascend/ascend-toolkit/latest/x86_84-linux/ascend_toolkit_install.info>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+fi
+
+
+echo "pip list | grep \"torch \"">>"${save_file}"
+cat pip list | grep "torch ">>"${save_file}"
+echo -e "\n">>"${save_file}"
+
+
+echo "pip list | grep torch-npu">>"${save_file}"
+cat pip list | grep torch-npu>>"${save_file}"
+echo -e "\n">>"${save_file}"
+
+
+echo "pip list | grep \"mindspore \"">>"${save_file}"
+cat pip list | grep "mindspore ">>"${save_file}"
 echo -e "\n">>"${save_file}"
 
 
