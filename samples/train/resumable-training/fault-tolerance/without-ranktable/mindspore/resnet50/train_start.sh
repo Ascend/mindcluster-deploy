@@ -172,10 +172,10 @@ if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
   run_file_path=${boot_file_path}/scripts/sched/
   export DEVICE_ID=0
   ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-  check_return_code
+  train_pids[$i]=$!
   if [[ $@ =~ need_freeze ]]; then
     ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${freeze_cmd} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-    check_return_code
+    train_pids[$i]=$!
   fi
   if [[ "${NPU_POD}" == "true" ]]; then
     export MS_ROLE="MS_WORKER"
