@@ -103,7 +103,7 @@ fi
 sleep 1
 
 # 获取hccl.json文件中的device_count字段
-device_count=$(cat "${RANK_TABLE_FILE}" | grep -o device_id | wc -l)
+device_count=$(cat "${RANK_TABLE_FILE}" | grep -ow device_id | wc -l)
 if [[ "${device_count}" -eq 0 ]]; then
   echo "device count is 0, train job failed." | tee -a hccl.log
   chmod 440 ${output_url}

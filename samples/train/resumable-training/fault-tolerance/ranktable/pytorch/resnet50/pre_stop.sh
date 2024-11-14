@@ -8,7 +8,7 @@ if [[ $LOCAL_WORLD_SIZE ]]; then
     proc_num=${LOCAL_WORLD_SIZE}
 else
     # 获取hccl.json中的device_count字段
-    device_count=$(cat "${RANK_TABLE_FILE}" | grep -o device_id | wc -l)
+    device_count=$(cat "${RANK_TABLE_FILE}" | grep -ow device_id | wc -l)
     if [[ "${device_count}" -eq 0 ]]; then
       echo "device count is 0, prestop job failed." | tee hccl.log
       exit 1
