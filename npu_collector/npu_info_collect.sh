@@ -53,17 +53,17 @@ fi
 
 
 echo "pip list | grep \"torch \"">>"${save_file}"
-cat pip list | grep "torch ">>"${save_file}"
+pip list | grep "torch ">>"${save_file}"
 echo -e "\n">>"${save_file}"
 
 
 echo "pip list | grep torch-npu">>"${save_file}"
-cat pip list | grep torch-npu>>"${save_file}"
+pip list | grep torch-npu>>"${save_file}"
 echo -e "\n">>"${save_file}"
 
 
 echo "pip list | grep \"mindspore \"">>"${save_file}"
-cat pip list | grep "mindspore ">>"${save_file}"
+pip list | grep "mindspore ">>"${save_file}"
 echo -e "\n">>"${save_file}"
 
 
