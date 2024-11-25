@@ -82,9 +82,10 @@ spec:
             - name: dshm
               emptyDir:
                 medium: Memory
-            - name: ranktable
+            - name: ranktable # Do not modify the name, it is checked by Ascend Operator to enable the saving of rank table to a shared file
               hostPath:
                 path: /user/mindx-dl/ranktable/default.default-infer-test-pytorch-910b  # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
+                type: Directory
             - name: localtime
               hostPath:
                 path: /etc/localtime
@@ -156,9 +157,10 @@ spec:
             - name: dshm
               emptyDir:
                 medium: Memory
-            - name: ranktable
+            - name: ranktable # Do not modify the name, it is checked by Ascend Operator to enable the saving of rank table to a shared file
               hostPath:
                 path: /user/mindx-dl/ranktable/default.default-infer-test-pytorch-910b # need pattern: shared-dir/job-namespace.job-name, the shared-dir should share with ascend-operator
+                type: Directory
             - name: localtime
               hostPath:
                 path: /etc/localtime
