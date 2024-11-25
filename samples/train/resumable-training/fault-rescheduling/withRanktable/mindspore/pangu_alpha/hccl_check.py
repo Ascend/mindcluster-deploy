@@ -46,15 +46,3 @@ def hccl_check(need_device_num) -> bool:
     sys.stdout.flush()
     os.environ["RANK_TABLE_FILE"] = new_hccl_path
     return True
-
-
-def get_restore_strategy():
-    from mindx_elastic.restore_module.restore_manager.restore_resilience_manager import RestoreResilienceManager
-    res_manager = RestoreResilienceManager()
-    restore_rank_str, _ = res_manager.generate_restore_strategy(fault_ranks="")
-    if len(restore_rank_str) == 0:
-        # not exist restore strategy file, skip it
-        return
-    if not hccl_check(len(restore_rank_str.split(','))):
-        print("check hccl failed, restore_rank_str {}, exit!".format(restore_rank_str))
-        exit(1)
