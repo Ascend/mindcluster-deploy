@@ -3,6 +3,7 @@ import json
 import os
 import argparse
 import signal
+import stat
 import time
 import logging
 import re
@@ -17,42 +18,46 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 from abc import ABC, abstractmethod
 
-from mindx_elastic.validator.file_process import safe_open
-from mindx_elastic.constants import constants
-from mindx_elastic.validator.validators import FileValidator, DirectoryValidator
-
 logger = logging.getLogger('recover_logger')
 logger.setLevel(logging.INFO)
 pattern = re.compile(r'^[a-z0-9]+[a-z0-9\-.]*[a-z0-9]+$')
 MAX_STR_LEN = 1024
+MAX_SIZE = 1024 * 1024
+MAX_FILE_PATH_LENGTH = 4096
 
 
-def check_input_file(file_path: Optional[str]) -> bool:
+def safe_open(file, mode="r", encoding='utf-8', errors=None, newline=None):
     """
-    Validate input file
+    Check open file validality.
+    :param file: open file
+    :param mode: file open mode
+    :param encoding: the encoding format
+    :param errors: string specifying how to handle encoding/decoding errors
+    :param newline: how newlines mode works
+    :return: file stream
     """
-    validation = DirectoryValidator(file_path, max_len=constants.MAX_FILE_PATH_LENGTH) \
-        .check_is_not_none() \
-        .check_dir_name() \
-        .path_should_exist(is_file=True, msg="Cannot find the file.") \
-        .should_not_contains_sensitive_words() \
-        .with_blacklist() \
-        .check()
+    file_real_path = os.path.relpath(file)
+    file_stream = open(file=file_real_path, mode=mode, encoding=encoding,
+                       errors=errors, newline=newline, closefd=True)
+    file_info = os.stat(file_stream.fileno())
+    if stat.S_ISLNK(file_info.st_mode):
+        file_stream.close()
+        raise ValueError(f"{os.path.basename(file)} should not be a symbolic link file.")
 
-    if not validation.is_valid():
-        logger.error("File is invalid")
-        return False
+    if file_info.st_size > MAX_SIZE:
+        file_stream.close()
+        raise ValueError(f"File {os.path.basename(file)} size should be less than {MAX_SIZE} bytes.")
 
-    if not FileValidator(file_path).check_file_size().check().is_valid():
-        logger.error("File size exceeds limited size.")
-        return False
-    return True
+    if file_info.st_uid != os.getuid() and file_info.st_uid != 0:
+        file_stream.close()
+        raise ValueError(f"{os.path.basename(file)} is not owned by current user or root.")
+    return file_stream
 
 
 def get_file_info(file_path: str) -> dict:
     with safe_open(file_path, mode="r", encoding='utf-8') as fault_config_out:
         try:
-            file_content = literal_eval(fault_config_out.read(constants.MAX_SIZE))
+            file_content = literal_eval(fault_config_out.read(MAX_SIZE))
         except Exception as e:
             logger.error(f"an unexpected exception {e} happen when get {file_path}")
             file_content = dict()
@@ -268,9 +273,6 @@ class ResetWorker:
 
     @staticmethod
     def _init_local_ranks(rank_table_path: str) -> list:
-        if not check_input_file(rank_table_path):
-            logger.error("invalid file path")
-            return []
         local_rank_list = []
         server_list_key = "server_list"
         server_id_key = "server_id"
@@ -308,9 +310,6 @@ class ResetWorker:
 
     def _get_ranks_from_cm(self, ranks_path: str, key: str) -> list:
         fault_key = "RankList"
-        if not check_input_file(ranks_path):
-            logger.error("invalid file path")
-            return []
         file_content = get_file_info(ranks_path)
         if not isinstance(file_content, dict):
             logger.error("get unexpected file content")
@@ -385,11 +384,8 @@ class ResetWorker:
             self.exit_recover_process()
 
         self._reset_all_status(new_pids)
-    
+
     def wait_for_completion(self, timeout=90):
-        if not check_input_file(self.rank_table_path):
-            logger.error("invalid rank table patch")
-            return True
         start_time = time.time()
         while True:
             with open(self.rank_table_path, 'r') as file:
