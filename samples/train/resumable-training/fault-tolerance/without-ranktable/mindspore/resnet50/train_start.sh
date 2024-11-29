@@ -159,6 +159,8 @@ if [[ "${MS_ROLE}" == "" ]]; then
   exit ${ret_code}
 fi
 
+train_pids=()
+
 # 分布式场景Scheduler
 if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
   echo "start scheduler"
@@ -172,31 +174,13 @@ if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
   run_file_path=${boot_file_path}/scripts/sched/
   export DEVICE_ID=0
   ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-  train_pids[$i]=$!
+  train_pids+=($i)
   if [[ $@ =~ need_freeze ]]; then
     ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${freeze_cmd} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-    train_pids[$i]=$!
+    train_pids+=($i)
   fi
   if [[ "${NPU_POD}" == "true" ]]; then
     export MS_ROLE="MS_WORKER"
-    start_index=`expr ${MS_NODE_RANK} \* ${MS_LOCAL_WORKER}`
-    end_index=`expr ${start_index} + ${MS_LOCAL_WORKER}`
-    for((i=((${end_index}-1));i>=${start_index};i--));
-    do
-      rm -rf ${boot_file_path}/scripts/worker_$i
-      mkdir ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/config/*.yaml ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/*.py ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/scripts/*.sh ${boot_file_path}/scripts/worker_$i
-      cp -r ${boot_file_path}/src ${boot_file_path}/scripts/worker_$i
-      cd ${boot_file_path}/scripts/worker_$i || exit
-      run_file_path=${boot_file_path}/scripts/worker_$i/
-      export MS_NODE_ID=${i}
-
-      ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} &> ${output_url}/worker_$i.log &
-      train_pids[$i]=$!
-      cd ..
-    done
   fi
 fi
 

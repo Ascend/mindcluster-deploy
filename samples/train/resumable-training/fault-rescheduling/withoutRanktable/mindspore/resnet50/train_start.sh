@@ -179,23 +179,6 @@ if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
   fi
   if [[ "${NPU_POD}" == "true" ]]; then
     export MS_ROLE="MS_WORKER"
-    start_index=`expr ${MS_NODE_RANK} \* ${MS_LOCAL_WORKER}`
-    end_index=`expr ${start_index} + ${MS_LOCAL_WORKER}`
-    for((i=((${end_index}-1));i>=${start_index};i--));
-    do
-      rm -rf ${boot_file_path}/scripts/worker_$i
-      mkdir ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/config/*.yaml ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/*.py ${boot_file_path}/scripts/worker_$i
-      cp ${boot_file_path}/scripts/*.sh ${boot_file_path}/scripts/worker_$i
-      cp -r ${boot_file_path}/src ${boot_file_path}/scripts/worker_$i
-      cd ${boot_file_path}/scripts/worker_$i || exit
-      run_file_path=${boot_file_path}/scripts/worker_$i/
-      export MS_NODE_ID=${i}
-      ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} &> ${output_url}/worker_$i.log &
-      check_return_code
-      cd ..
-    done
   fi
 fi
 
