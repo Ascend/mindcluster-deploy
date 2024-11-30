@@ -173,11 +173,11 @@ if [[ "${MS_ROLE}" == "MS_SCHED" ]]; then
   cd ${boot_file_path}/scripts/sched || exit
   run_file_path=${boot_file_path}/scripts/sched/
   export DEVICE_ID=0
-  ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-  train_pids+=($i)
+  ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} &> ${output_url}/sched.log &
+  train_pids+=($!)
   if [[ $@ =~ need_freeze ]]; then
-    ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${freeze_cmd} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} && tee ${output_url}/sched.log &
-    train_pids+=($i)
+    ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${freeze_cmd} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} &> ${output_url}/sched.log &
+    train_pids+=($!)
   fi
   if [[ "${NPU_POD}" == "true" ]]; then
     export MS_ROLE="MS_WORKER"
@@ -200,9 +200,8 @@ if [[ "${MS_ROLE}" == "MS_WORKER" ]]; then
      cd ${boot_file_path}/scripts/worker_$i || exit
      run_file_path=${boot_file_path}/scripts/worker_$i/
      export MS_NODE_ID=${i}
-
      ${DLS_PROGRAM_EXECUTOR} ${run_file_path}${boot_file} ${train_param} --run_distribute=True --device_num=${MS_LOCAL_WORKER} --parameter_server=False --device_target=Ascend --output_dir=${output_url} &> ${output_url}/worker_$i.log &
-     train_pids[$i]=$!
+     train_pids+=($!)
      cd ..
   done
 fi
