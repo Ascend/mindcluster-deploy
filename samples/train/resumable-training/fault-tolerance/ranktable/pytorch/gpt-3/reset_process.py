@@ -12,7 +12,6 @@ import subprocess
 import psutil
 
 from typing import Optional
-from ast import literal_eval
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
@@ -57,7 +56,7 @@ def safe_open(file, mode="r", encoding='utf-8', errors=None, newline=None):
 def get_file_info(file_path: str) -> dict:
     with safe_open(file_path, mode="r", encoding='utf-8') as fault_config_out:
         try:
-            file_content = literal_eval(fault_config_out.read(MAX_SIZE))
+            file_content = json.loads(fault_config_out.read(MAX_SIZE))
         except Exception as e:
             logger.error(f"an unexpected exception {e} happen when get {file_path}")
             file_content = dict()
