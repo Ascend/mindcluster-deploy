@@ -185,7 +185,7 @@ do
          train_pids[${#train_pids[@]}]=$p
       done
    fi
-   if [ ${#train_pids[@]} -ge $MS_LOCAL_WORKER ]
+   if [ $NODE_RANK -eq 0 -a ${#train_pids[@]} -gt $LOCAL_WORKER ] || [ $NODE_RANK -gt 0 -a ${#train_pids[@]} -ge $LOCAL_WORKER ]
    then
       break
    else
