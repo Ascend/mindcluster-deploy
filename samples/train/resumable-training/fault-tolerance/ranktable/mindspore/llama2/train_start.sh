@@ -39,7 +39,7 @@ USE_NFS=false
 MULTI_NODE=true
 
 # 开启uce功能场景下设置，替换yaml文件中ctrl_ip的值
-if [ $USE_NFS -ne true ] || [ $MULTI_NODE -ne true ] || [ $MS_NODE_RANK -eq 1 ]; then
+if [ $USE_NFS != true ] || [ $MULTI_NODE != true ] || [ $MS_NODE_RANK == 1 ]; then
    sed -i "s#\(ctrl_ip:\).*#\1 \"$MS_SCHED_HOST\"#g" "$config_yaml"
 fi
 
