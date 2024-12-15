@@ -33,8 +33,15 @@ reset_process=/job/code/mindformers/scripts/reset_process.py
 rm -rf $ASCEND_PROCESS_LOG_PATH
 rm -rf $msrun_log
 
+# 使用共享存储
+USE_NFS=false
+# 多节点
+MULTI_NODE=true
+
 # 开启uce功能场景下设置，替换yaml文件中ctrl_ip的值
-sed -i "s#\(ctrl_ip:\).*#\1 \"$MS_SCHED_HOST\"#g" "$config_yaml"
+if [ $USE_NFS -ne true ] || [ $MULTI_NODE -ne true ] || [ $MS_NODE_RANK -eq 1 ]; then
+   sed -i "s#\(ctrl_ip:\).*#\1 \"$MS_SCHED_HOST\"#g" "$config_yaml"
+fi
 
 # 拉起训练进程，获取进程号
 source $msrun_launcher "python -u run_mindformer.py --config $config_yaml --run_mode train" $MS_WORKER_NUM $MS_LOCAL_WORKER $MS_SCHED_HOST $MS_SCHED_PORT $MS_NODE_RANK $msrun_log True 300
