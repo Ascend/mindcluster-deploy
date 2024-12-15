@@ -80,7 +80,7 @@ spec:
           - name: code
             nfs:
               server: 127.0.0.1
-              path: "/data/atlas_dls/code/mindformers/"
+              path: "/data/atlas_dls/code/"
           - name: data
             nfs:
               server: 127.0.0.1
@@ -148,8 +148,6 @@ spec:
               mountPath: /job/code
             - name: data
               mountPath: /job/data
-            - name: output
-              mountPath: /job/output
             - name: ascend-driver
               mountPath: /usr/local/Ascend/driver
             - name: dshm
@@ -171,7 +169,7 @@ spec:
           - name: code
             nfs:
               server: 127.0.0.1
-              path: "/data/atlas_dls/code/mindformers/"
+              path: "/data/atlas_dls/code"
           - name: data
             nfs:
               server: 127.0.0.1
