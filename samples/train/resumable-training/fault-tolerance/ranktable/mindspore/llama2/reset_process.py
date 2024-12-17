@@ -46,6 +46,13 @@ def signal_mindio_controller_end():
     time.sleep(constants.WAITING_INTERVAL * constants.WAIT_TIMES)
 
 
+def signal_mindio_controller_exit():
+    ms_role = os.getenv("MS_ROLE")
+    if ms_role != "MS_SCHED":
+        return
+    shared_data.shared_data_inst.set_exit_flag(True)
+
+
 def safe_open(file, mode="r", encoding='utf-8', errors=None, newline=None):
     """
     Check open file validality.
@@ -259,10 +266,12 @@ class ResetWorker:
         self.killed_abnormal = False
         self.killed_normal = False
         self.stopped_normal = False
+        self.kill_abnormal_by_fault_rank = False
         self.with_rank = with_rank
         self.reset_cm_path = "/user/restore/reset/config/reset.json"
         self.rank_table_path = "/user/serverid/devindex/config/hccl.json"
         self.fault_rank_list = []
+        self.real_fault_rank_list = []
         self.recover_rank_list = []
         self.init_pids = pids
         self.new_proc = []
@@ -398,6 +407,7 @@ class ResetWorker:
     def _restore_train_start(self):
         new_pids = []
         try:
+            signal_mindio_controller_exit()
             new_pids, self.new_proc = self._process_manager.restore_train_process()
         except Exception as e:
             logger.error(f"an unexpected error {e} occur when recover process")
@@ -425,8 +435,11 @@ class ResetWorker:
     def _is_no_fault_happen(self):
         return len(self.fault_rank_list) == 0
 
+    def _is_no_real_fault_happen(self):
+        return len(self.real_fault_rank_list) == 0
+
     def _reset_all_status(self, new_pids):
-        if len(new_pids) != len(self.init_pids):
+        if len(new_pids) != len(self.init_pids) and len(new_pids) != len(self.init_pids) + 1:
             logger.error("recover error")
             self.exit_recover_process()
 
@@ -437,12 +450,19 @@ class ResetWorker:
         self._process_manager = self._init_process_manager(new_pids)
         self.fault_rank_list = []
         self.recover_rank_list = []
+        self.real_fault_rank_list = []
 
     def get_fault_ranks(self):
         fault_rank_list = self._get_ranks_from_cm(self.reset_cm_path, "unrecovered")
         if len(fault_rank_list) != 0:
             self.fault_rank_list = fault_rank_list
         return fault_rank_list
+
+    def get_real_fault_ranks(self):
+        real_fault_rank_list = self._get_ranks_from_cm(self.reset_cm_path, "fault")
+        if len(real_fault_rank_list) != 0:
+            self.real_fault_rank_list = real_fault_rank_list
+        return real_fault_rank_list
 
     def get_recover_ranks(self):
         recover_rank_list = self._get_ranks_from_cm(self.reset_cm_path, "recovered")
@@ -478,11 +498,30 @@ class ResetWorker:
 
         if self._is_stopped() and self._is_recover():
             logger.info("start to recover all process ")
+            self.retry_time = read_retry_time(self.reset_cm_path)
             self._restore_train_start()
+    
+    def kill_all_process(self):
+        self._kill_normal_process(self._local_rank)
+
+    def has_fault_rank(self):
+        return self.kill_abnormal_by_fault_rank == True 
 
     def reset_npu_process(self):
         logger.info("new loop start")
+        if self.check_master_exit():
+            return
         self.check_all_alive()
+        real_fault_rank_list = self.get_real_fault_ranks()
+        if len(real_fault_rank_list) != 0:
+            logger.info(f"real fault rank list is {real_fault_rank_list}")
+        for rank in self._local_rank:
+            if rank in real_fault_rank_list:
+                self.kill_all_process()
+                self.kill_abnormal_by_fault_rank = True
+                self._sched.shutdown()
+                logger.info("fault rank in list, exit")
+                return
         fault_rank_list = self.get_fault_ranks()
         if len(fault_rank_list) != 0:
             logger.info(f"fault rank list is {fault_rank_list}")
@@ -504,6 +543,17 @@ class ResetWorker:
     def start(self):
         self._sched.add_job(self.reset_npu_process, "interval", seconds=5)
         self._sched.start()
+
+    def check_master_exit(self):
+        ms_role = os.getenv("MS_ROLE")
+        if ms_role != "MS_SCHED":
+            logger.info(f"current role is not ms_sched, rank: {ms_role}")
+            return False
+        if shared_data.shared_data_inst.get_kill_flag():
+            logger.info("ms_sched receive killMaster signal")
+            self._sched.shutdown()
+            return True
+        return False
 
 
 def read_retry_time(reset_cm_path):
@@ -566,7 +616,6 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--with_rank', action='store_true', help='set this param if run with rank-table')
     parser.add_argument('-p', '--pids', dest='pids', type=int, nargs='+', help='the pids of training process which '
                                                                                'monitored by reset_process', default=-1)
-    start_grpc_client()
     args = parser.parse_args()
     logger.info("reset process begin!")
     logger.info(f"running param {args.time}, {args.mode}, {args.frame}")
@@ -592,6 +641,7 @@ if __name__ == "__main__":
     formatter = logging.Formatter(LOG_FORMAT)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+    start_grpc_client()
     logger.info(f"get pid {args.pids}")
     register_singal()
 
@@ -599,4 +649,11 @@ if __name__ == "__main__":
                                pids=args.pids, with_rank=args.with_rank)
     reset_worker.start()
     while True:
+        if shared_data.shared_data_inst.get_kill_flag():
+            reset_worker.kill_all_process()
+            logger.info("main process receive killMaster signal, exit")
+            exit(1)
+        if reset_worker.has_fault_rank():
+            logger.info("main process receive fault rank, exit")
+            exit(1)
         time.sleep(5)
