@@ -1,7 +1,7 @@
 source /root/.bashrc
 export LD_LIBRARY_PATH=/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver:$LD_LIBRARY_PATH
 
-export MS_COMPILER_CACHE_ENABLE=1
+export MS_COMPILER_CACHE_ENABLE=1  # 开启编译缓存
 export MS_COMPILER_CACHE_PATH=/job/code/cache
 source /usr/local/Ascend/driver/bin/setenv.bash
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
@@ -51,12 +51,24 @@ train_pids=$MSRUN_TRAINING_PID_NUM_SELF
 
 python -u $reset_process -p "${train_pids[@]}" -r &
 reset_pid=$!
+echo "start wait msrun pid"
 wait $msrun_pid
 exit_code=$?
+echo "finish wait msrun pid, exit code is: $exit_code"
 if [ ${exit_code} -eq 0 ]; then
    kill -15 ${reset_pid}
    echo "training finished"
+   kill -15 $msrun_pid
    exit ${exit_code}
 else
+   echo "start wait reset pid ${reset_pid}"
    wait ${reset_pid}
+   ET=$?
+   echo "finish wait reset pid ${reset_pid}"
+   echo "ET code is $ET"
+   kill -9 $msrun_pid
+   if [[ ${ET} -ne 0 ]]; then
+      echo "running job failed." | tee -a log
+      exit ${ET}
+   fi
 fi
