@@ -27,21 +27,21 @@ msrun_log=/job/code/mindformers/output/msrun_log/
 
 # 配置、脚本文件
 config_yaml=/job/code/mindformers/configs/llama2/pretrain_llama2_70b_bf16_32p.yaml
-msrun_launcher=/job/code/mindformers/scripts/msrun_launcher.sh
+msrun_launcher=/job/code/mindformers/scripts/msrun_launcher_start.sh
 reset_process=/job/code/mindformers/scripts/reset_process.py
 
 rm -rf $ASCEND_PROCESS_LOG_PATH
 rm -rf $msrun_log
 
-# 使用共享存储
-USE_NFS=false
-# 多节点
-MULTI_NODE=true
-
-# 开启uce功能场景下设置，替换yaml文件中ctrl_ip的值
-if [ $USE_NFS != true ] || [ $MULTI_NODE != true ] || [ $MS_NODE_RANK == 1 ]; then
-   sed -i "s#\(ctrl_ip:\).*#\1 \"$MS_SCHED_HOST\"#g" "$config_yaml"
+if [ $MS_NODE_RANK == 0 ]; then
+   config_dir=$(dirname $config_yaml)
+   config_file=$(basename $config_yaml .yaml)
+   new_config_yaml=${config_dir}/${config_file}_master.yaml
+   cp -f $config_yaml $new_config_yaml
+   config_yaml=$new_config_yaml
 fi
+echo "config yaml is: $config_yaml"
+sed -i "s#\(ctrl_ip:\).*#\1 \"$MS_SCHED_HOST\"#g" "$config_yaml"
 
 # 拉起训练进程，获取进程号
 source $msrun_launcher "python -u run_mindformer.py --config $config_yaml --run_mode train" $MS_WORKER_NUM $MS_LOCAL_WORKER $MS_SCHED_HOST $MS_SCHED_PORT $MS_NODE_RANK $msrun_log True 300
