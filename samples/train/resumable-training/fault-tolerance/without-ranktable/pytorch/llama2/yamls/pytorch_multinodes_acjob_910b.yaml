@@ -23,10 +23,10 @@ metadata:
     fault-scheduling: "force"
     fault-retry-times: "10"
     pod-rescheduling: "on" # 开启pod重调度
-    process-recover-enable: "on" # DL组件开启训练进程级恢复
+    process-recover-enable: "on" # 开启训练进程级恢复
     subHealthyStrategy: "ignore" # 忽略亚健康
   annotations:
-    recover-strategy: "retry.recover,dump,exit" # 开启step重计算、进程级恢复、临终遗言和进程退出
+    recover-strategy: "retry,recover,dump,exit" # 开启step重计算、进程级恢复、临终遗言和进程退出
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -84,7 +84,66 @@ spec:
             command:                           # training command, which can be modified
               - /bin/bash
               - -c
-            args: [ "cd /job/code; source /usr/local/Ascend/ascend-toolkit/set_env.sh; export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH; export LOGLEVEL=DEBUG; chmod +x scripts/train_start.sh; bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py --tensor-model-parallel-size 8 --pipeline-model-parallel-size 1 --sequence-parallel --num-layers 32 --hidden-size 4096 --ffn-hidden-size 11008 --num-attention-heads 32 --tokenizer-type Llama2Tokenizer --seq-length 4096 --max-position-embeddings 4096 --micro-batch-size 1 --global-batch-size 256 --make-vocab-size-divisible-by 1 --lr 1.25e-6 --train-iters 5000 --lr-decay-style cosine --untie-embeddings-and-output-weights --disable-bias-linear --attention-dropout 0.0 --init-method-std 0.01 --hidden-dropout 0.0 --position-embedding-type rope --normalization RMSNorm --use-fused-rmsnorm --swiglu --use-flash-attn --no-masked-softmax-fusion --attention-softmax-in-fp32 --min-lr 1.25e-7 --weight-decay 1e-1 --lr-warmup-fraction 0.01 --clip-grad 1.0 --adam-beta1 0.9 --initial-loss-scale 65536 --adam-beta2 0.95 --no-gradient-accumulation-fusion --no-load-optim --no-load-rng --use-distributed-optimizer --use-fused-swiglu --use-fused-rotary-pos-emb --overlap-grad-reduce --bf16 --enable-high-availability --enable-hbmfault-repair --enable-worker-reboot --data-path $DATA_PATH --split 949501 --log-interval 1 --save-interval 20 --eval-interval 1000 --eval-iters 10 --distributed-backend nccl" ]
+            args:
+              - | 
+                cd /job/code; 
+                source /usr/local/Ascend/ascend-toolkit/set_env.sh; 
+                export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH; 
+                export LOGLEVEL=DEBUG; 
+                chmod +x scripts/train_start.sh; 
+                bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py \
+                  --tensor-model-parallel-size 8 \
+                  --pipeline-model-parallel-size 1 \
+                  --sequence-parallel --num-layers 32 \
+                  --hidden-size 4096 \
+                  --ffn-hidden-size 11008 \
+                  --num-attention-heads 32 \
+                  --tokenizer-type Llama2Tokenizer \
+                  --seq-length 4096 \
+                  --max-position-embeddings 4096 \
+                  --micro-batch-size 1 \
+                  --global-batch-size 256 \
+                  --make-vocab-size-divisible-by 1 \
+                  --lr 1.25e-6 \
+                  --train-iters 5000 \
+                  --lr-decay-style cosine \
+                  --untie-embeddings-and-output-weights \
+                  --disable-bias-linear \
+                  --attention-dropout 0.0 \
+                  --init-method-std 0.01 \
+                  --hidden-dropout 0.0 \
+                  --position-embedding-type rope \
+                  --normalization RMSNorm \
+                  --use-fused-rmsnorm \
+                  --swiglu \
+                  --use-flash-attn \
+                  --no-masked-softmax-fusion \
+                  --attention-softmax-in-fp32 \
+                  --min-lr 1.25e-7 \
+                  --weight-decay 1e-1 \
+                  --lr-warmup-fraction 0.01 \
+                  --clip-grad 1.0 \
+                  --adam-beta1 0.9 \
+                  --initial-loss-scale 65536 \
+                  --adam-beta2 0.95 \
+                  --no-gradient-accumulation-fusion \
+                  --no-load-optim \
+                  --no-load-rng \
+                  --use-distributed-optimizer \
+                  --use-fused-swiglu \
+                  --use-fused-rotary-pos-emb \
+                  --overlap-grad-reduce \
+                  --bf16 \
+                  --enable-high-availability \
+                  --enable-hbmfault-repair \
+                  --enable-worker-reboot \
+                  --data-path $DATA_PATH \
+                  --split 949501 \
+                  --log-interval 1 \
+                  --save-interval 20 \
+                  --eval-interval 1000 \
+                  --eval-iters 10 \
+                  --distributed-backend nccl
             # --enable-high-availability：故障快速恢复特性开关，默认关闭，配置后即开启临终遗言功能。
             # --enable-hbmfault-repair：Step级别重计算恢复功能开关，默认关闭，配置后对片上内存进行故障检测，并完成在线修复。需要同时配置--enable-high-availability。
             # --enable-worker-reboot：进程级别重调度功能开关，默认关闭，配置后在发生一般性故障时，进行进程级别调度，继续训练。需同时配置--enable-high-availability。
@@ -188,7 +247,66 @@ spec:
             command:                                  # training command, which can be modified
               - /bin/bash
               - -c
-            args: [ "cd /job/code; source /usr/local/Ascend/ascend-toolkit/set_env.sh; export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH; export LOGLEVEL=DEBUG; chmod +x scripts/train_start.sh; bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py --tensor-model-parallel-size 8 --pipeline-model-parallel-size 1 --sequence-parallel --num-layers 32 --hidden-size 4096 --ffn-hidden-size 11008 --num-attention-heads 32 --tokenizer-type Llama2Tokenizer --seq-length 4096 --max-position-embeddings 4096 --micro-batch-size 1 --global-batch-size 256 --make-vocab-size-divisible-by 1 --lr 1.25e-6 --train-iters 5000 --lr-decay-style cosine --untie-embeddings-and-output-weights --disable-bias-linear --attention-dropout 0.0 --init-method-std 0.01 --hidden-dropout 0.0 --position-embedding-type rope --normalization RMSNorm --use-fused-rmsnorm --swiglu --use-flash-attn --no-masked-softmax-fusion --attention-softmax-in-fp32 --min-lr 1.25e-7 --weight-decay 1e-1 --lr-warmup-fraction 0.01 --clip-grad 1.0 --adam-beta1 0.9 --initial-loss-scale 65536 --adam-beta2 0.95 --no-gradient-accumulation-fusion --no-load-optim --no-load-rng --use-distributed-optimizer --use-fused-swiglu --use-fused-rotary-pos-emb --overlap-grad-reduce --bf16 --enable-high-availability --enable-hbmfault-repair --enable-worker-reboot --data-path $DATA_PATH --split 949501 --log-interval 1 --save-interval 20 --eval-interval 1000 --eval-iters 10 --distributed-backend nccl" ]
+            args:
+              - |
+                cd /job/code;
+                source /usr/local/Ascend/ascend-toolkit/set_env.sh;
+                export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH;
+                export LOGLEVEL=DEBUG;
+                chmod +x scripts/train_start.sh;
+                bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py \
+                --tensor-model-parallel-size 8 \
+                --pipeline-model-parallel-size 1 \
+                --sequence-parallel --num-layers 32 \
+                --hidden-size 4096 \
+                --ffn-hidden-size 11008 \
+                --num-attention-heads 32 \
+                --tokenizer-type Llama2Tokenizer \
+                --seq-length 4096 \
+                --max-position-embeddings 4096 \
+                --micro-batch-size 1 \
+                --global-batch-size 256 \
+                --make-vocab-size-divisible-by 1 \
+                --lr 1.25e-6 \
+                --train-iters 5000 \
+                --lr-decay-style cosine \
+                --untie-embeddings-and-output-weights \
+                --disable-bias-linear \
+                --attention-dropout 0.0 \
+                --init-method-std 0.01 \
+                --hidden-dropout 0.0 \
+                --position-embedding-type rope \
+                --normalization RMSNorm \
+                --use-fused-rmsnorm \
+                --swiglu \
+                --use-flash-attn \
+                --no-masked-softmax-fusion \
+                --attention-softmax-in-fp32 \
+                --min-lr 1.25e-7 \
+                --weight-decay 1e-1 \
+                --lr-warmup-fraction 0.01 \
+                --clip-grad 1.0 \
+                --adam-beta1 0.9 \
+                --initial-loss-scale 65536 \
+                --adam-beta2 0.95 \
+                --no-gradient-accumulation-fusion \
+                --no-load-optim \
+                --no-load-rng \
+                --use-distributed-optimizer \
+                --use-fused-swiglu \
+                --use-fused-rotary-pos-emb \
+                --overlap-grad-reduce \
+                --bf16 \
+                --enable-high-availability \
+                --enable-hbmfault-repair \
+                --enable-worker-reboot \
+                --data-path $DATA_PATH \
+                --split 949501 \
+                --log-interval 1 \
+                --save-interval 20 \
+                --eval-interval 1000 \
+                --eval-iters 10 \
+                --distributed-backend nccl
             # --enable-high-availability：故障快速恢复特性开关，默认关闭，配置后即开启临终遗言功能。
             # --enable-hbmfault-repair：Step级别重计算恢复功能开关，默认关闭，配置后对片上内存进行故障检测，并完成在线修复。需要同时配置--enable-high-availability。
             # --enable-worker-reboot：进程级别重调度功能开关，默认关闭，配置后在发生一般性故障时，进行进程级别调度，继续训练。需同时配置--enable-high-availability。
