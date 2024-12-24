@@ -8,6 +8,7 @@ collect_tool
     |-- net_data_collect.py
     |-- npu_data_collect.py
     |-- npu_info_collect.sh
+    |-- npu_info_collect_compatible.sh
     |-- host_resource_collect.py
 ```
 
@@ -81,6 +82,10 @@ bash npu_info_collect.sh /xx/enviornment_check/worker-0/npu_info_after.txt
 `{NPU_NUM}`：npu卡数，默认值为8。
 
 `{CHIP_NUM}`：每个NPU内芯片的数量，默认值为1。
+
+**3、限制说明**
+
+要求Ascend FaultDiag版本≥6.0.RC2，6.0.RC2及以下请使用旧版脚本`npu_info_collect_compatible.sh`采集。
 
 --------
 
