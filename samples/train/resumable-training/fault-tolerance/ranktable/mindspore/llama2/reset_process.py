@@ -68,9 +68,6 @@ def safe_open(file, mode="r", encoding='utf-8', errors=None, newline=None):
         file_stream.close()
         raise ValueError(f"File {os.path.basename(file)} size should be less than {MAX_SIZE} bytes.")
 
-    if file_info.st_uid != os.geteuid() and file_info.st_uid != 0:
-        file_stream.close()
-        raise ValueError(f"{os.path.basename(file)} is not owned by current user or root.")
     return file_stream
 
 
