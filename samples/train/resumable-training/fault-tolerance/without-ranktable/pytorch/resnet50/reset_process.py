@@ -309,6 +309,9 @@ class ResetWorker:
 
     def _get_ranks_from_cm(self, ranks_path: str, key: str) -> list:
         fault_key = "RankList"
+        if not os.path.isfile(ranks_path):
+            logger.error(f"file is not exist, {ranks_path}")
+            return []
         file_content = get_file_info(ranks_path)
         if not isinstance(file_content, dict):
             logger.error("get unexpected file content")
