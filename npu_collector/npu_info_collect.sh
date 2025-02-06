@@ -130,6 +130,14 @@ done
 
 for((i=0;i<hccn_tool_num;i++));
 do
+  echo "/usr/local/Ascend/driver/tools/hccn_tool -i ${i} -optical -g | grep prese">>"${save_file}"
+  /usr/local/Ascend/driver/tools/hccn_tool -i "${i}" -optical -g | grep prese>>"${save_file}"
+  echo -e "\n">>"${save_file}"
+done
+
+
+for((i=0;i<hccn_tool_num;i++));
+do
   echo "/usr/local/Ascend/driver/tools/hccn_tool -i ${i} -optical -g">>"${save_file}"
   /usr/local/Ascend/driver/tools/hccn_tool -i "${i}" -optical -g>>"${save_file}"
   echo -e "\n">>"${save_file}"
