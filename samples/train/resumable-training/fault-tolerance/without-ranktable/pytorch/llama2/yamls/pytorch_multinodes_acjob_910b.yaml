@@ -90,6 +90,7 @@ spec:
                 source /usr/local/Ascend/ascend-toolkit/set_env.sh; 
                 export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH; 
                 export LOGLEVEL=DEBUG; 
+                export ELASTIC_PROCESS_RECOVER_ENABLE=1;
                 chmod +x scripts/train_start.sh; 
                 bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py \
                   --tensor-model-parallel-size 8 \
@@ -253,6 +254,7 @@ spec:
                 source /usr/local/Ascend/ascend-toolkit/set_env.sh;
                 export PYTHONPATH=/job/code/MindSpeed:$PYTHONPATH;
                 export LOGLEVEL=DEBUG;
+                export ELASTIC_PROCESS_RECOVER_ENABLE=1;
                 chmod +x scripts/train_start.sh;
                 bash scripts/train_start.sh /job/code /job/output pretrain_gpt.py \
                 --tensor-model-parallel-size 8 \
