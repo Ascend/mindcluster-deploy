@@ -1,8 +1,8 @@
 # mindxdl-deploy
 -   [免责申明](#免责申明)
+-   [代码仓配套](#代码仓版本配套)
 -   [支持的产品形态](#支持的产品形态)
 -   [目录说明](#目录说明)
--   [代码仓配套](#代码仓版本配套)
 
 # 免责申明
 本代码仓库提供[Mind Cluster]示例代码和脚本, 不建议直接用于生产环境.
@@ -13,6 +13,15 @@
 - 本项目及贡献者不承担任何法律责任及赔偿义务.
 
 [Mind Cluster]: https://www.hiascend.com/document/detail/zh/mindcluster/600/clustersched/introduction/schedulingsd/mxdlug_201.html
+
+# 代码仓版本配套
+| Mind Cluster版本               | mindxdl-deploy仓配套分支 |
+|------------------------------|---------------------|
+| 7.0.RC1                      | branch_v7.0.0-RC1   | 
+| 6.0.0                        | branch_v6.0.0       | 
+| 6.0.RC3                      | branch_v6.0.0-RC3   |
+| 6.0.RC2                      | branch_v6.0.0-RC2   |
+| 6.0.RC1, 5.0.1, 5.0.0, 3.0.0 | branch_v6.0.0-RC1   |
 
 # 支持的产品形态
 
@@ -121,12 +130,4 @@
         ├─logger
         ├─monitor
         └─utils
-
 ```
-# 代码仓版本配套
-| Mind Cluster版本 | mindxdl-deploy仓配套分支  |
-|----------------|----------------------|
-| 6.0.0          | branch_v6.0.0        | 
-| 6.0.RC3 | branch_v6.0.0-RC3 |
-| 6.0.RC2 | branch_v6.0.0-RC2 |
-| 6.0.RC1, 5.0.1, 5.0.0, 3.0.0 | branch_v6.0.0-RC1 |
