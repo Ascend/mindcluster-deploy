@@ -38,7 +38,7 @@ collect_tool
 --------
 
 ### 二、npu_data_collect.py
-单机“NPU状态监控指标文件”采集脚本
+单机“NPU状态监测指标文件”采集脚本
 
 **1、运行说明**
 
@@ -91,7 +91,7 @@ bash npu_info_collect.sh /xx/enviornment_check/worker-0/npu_info_after.txt
 
 ### 四、host_resource_collect.py
 
-单机“主机资源监控文件”采集脚本
+单机“主机资源监测文件”采集脚本
 
 **1、运行说明**
 
