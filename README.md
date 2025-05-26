@@ -122,6 +122,10 @@
 │      └─prometheus
 │          ├─base
 │          └─prometheus_operator
+│─super_pod_diag
+|   |
+|   |-super_pod_diag.sh
+│   └─README.md
 └─training_toolkit                            # 配合MindXDL使用的训练工具
     ├─docs
     └─training_toolkit
