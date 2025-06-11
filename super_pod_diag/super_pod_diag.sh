@@ -115,21 +115,36 @@ dirs=("$output_dir/parse_input/host" "$output_dir/parse_input/lcne" "$output_dir
 rm -rf "$output_dir/parse_output"
 opts=("-i" "--lcne_log" "--bmc_log")
 start=$(date +%s.%N)
+
+# 设置最大并发数
+max_jobs=10
+job_count=0
+
 for index in "${!dirs[@]}"; do
     dir="${dirs[index]}"
     options="${opts[index]}"
 
     for path in "$dir"/*; do
-        filename=$(basename "$path")
-          echo "Processing: $filename"
-          parse_out_put="$output_dir/parse_output/$(basename "$dir")/$filename"
-          mkdir -p "$parse_out_put"
-          echo "ascend-fd parse $options  \"$path\" -o \"$parse_out_put\" "
+        # 等待空闲进程槽位
+        while (( job_count >= max_jobs )); do
+            wait -n
+            ((job_count--))
+        done
 
-          #echo ' ascend-fd parse -i "$path" -o "$parse_out_putr" $options'
-          ascend-fd parse $options "$path" -o "$parse_out_put"
+        filename=$(basename "$path")
+        echo "Processing: $filename"
+        parse_out_put="$output_dir/parse_output/$(basename "$dir")/$filename"
+        mkdir -p "$parse_out_put"
+        (
+            ascend-fd parse $options "$path" -o "$parse_out_put"
+        ) &
+
+        ((job_count++))
     done
 done
+
+# 等待所有剩余后台任务完成
+wait
 end1=$(date +%s.%N)
 echo "清洗耗时: $(echo "$end1 $start" | awk '{printf "%.2f分钟", ($1-$2)/60}')"
 echo "ascend-fd diag -i \"$output_dir/parse_output\" -o \"$output_dir\" -s super_pod"
