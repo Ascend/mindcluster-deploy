@@ -1,18 +1,21 @@
+
 #!/bin/bash
 
 output_dir="."
-bmc_log=""
-lcne_log=""
+bmc_logs=()
+lcne_logs=()
 host_log=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --bmc_log)
-            bmc_log="$2"
+            IFS=',' read -ra files <<< "$2"
+            bmc_logs+=("${files[@]}")
             shift 2
             ;;
         --lcne_log)
-            lcne_log="$2"
+            IFS=',' read -ra files <<< "$2"
+            lcne_logs+=("${files[@]}")
             shift 2
             ;;
         --host_log)
@@ -29,35 +32,35 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
 rm -rf "$output_dir/parse_input"
-# 创建输出目录结构
 mkdir -p "$output_dir/parse_input/bmc" \
          "$output_dir/parse_input/lcne" \
          "$output_dir/parse_input/host"
 
 # 处理BMC日志
-if [ -n "$bmc_log" ]; then
-    if [[ "$bmc_log" == *.zip ]]; then
-        unzip -oq "$bmc_log" -d "$output_dir/parse_input/bmc"
-    elif [[ "$bmc_log" == *.tar.gz ]]; then
-        tar -xzf "$bmc_log" -C "$output_dir/parse_input/bmc/"
+for log in "${bmc_logs[@]}"; do
+    if [[ "$log" == *.zip ]]; then
+        unzip -oq "$log" -d "$output_dir/parse_input/bmc/"
+    elif [[ "$log" == *.tar.gz ]]; then
+        tar -xzf "$log" -C "$output_dir/parse_input/bmc/"
     else
-        echo "BMC日志格式不支持: $bmc_log"
+        echo "BMC日志格式不支持: $log"
         exit 1
     fi
-fi
+done
 
 # 处理LCNE日志
-if [ -n "$lcne_log" ]; then
-    if [[ "$lcne_log" == *.zip ]]; then
-        unzip -oq "$lcne_log" -d "$output_dir/parse_input/lcne/"
-    elif [[ "$lcne_log" == *.tar.gz ]]; then
-        tar -xzf "$lcne_log" -C "$output_dir/parse_input/lcne/"
+for log in "${lcne_logs[@]}"; do
+    if [[ "$log" == *.zip ]]; then
+        unzip -oq "$log" -d "$output_dir/parse_input/lcne/"
+    elif [[ "$log" == *.tar.gz ]]; then
+        tar -xzf "$log" -C "$output_dir/parse_input/lcne/"
     else
-        echo "LCNE日志格式不支持: $lcne_log"
+        echo "LCNE日志格式不支持: $log"
         exit 1
     fi
-fi
+done
 
 # 处理主机日志
 if [ -n "$host_log" ]; then
@@ -81,7 +84,14 @@ recursive_unzip() {
                 echo "解压中: $file"
                 local base_dir="$(dirname "$file")"
                 local file_name="$(basename "$file")"
-                local extract_dir="${file%.*}"
+                if [[ $file == *.zip ]]; then
+                    extract_dir="${file%.zip}"
+                elif [[ $file == *.tar.gz ]]; then
+                    extract_dir="${file%.tar.gz}"
+                else
+                    extract_dir="${file%.*}"
+                fi
+                extract_dir="${extract_dir//(*)/}"
 
                 # 创建与压缩文件同名的目录
                 mkdir -p "$extract_dir"
@@ -89,7 +99,8 @@ recursive_unzip() {
                 if [[ "$file" == *.zip ]]; then
                     unzip -q "$file" -d "$extract_dir" 2>/dev/null
                 elif [[ "$file" == *.tar.gz ]]; then
-                    tar -xzf "$file" -C "$extract_dir" 2>/dev/null
+                    tar -xvzf "$file" -C "$extract_dir" 2>/dev/null
+                    rm "$file"
                 fi
             fi
         done < <(find "$target_dir" \( -name "*.zip" -o -name "*.tar.gz" \) -print0 2>/dev/null)

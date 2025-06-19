@@ -19,8 +19,8 @@
 
 **2、参数说明**
 `--host_log {HOST_LOG}`，host日志路径(未压缩)，必选
-`--bmc_log {BMC_LOG}`， bmc日志路径(已压缩且解压后的文件为LogCollect.xlsx同级目录)，必选
-`--lcne_log {LCNE_LOG}`， lcne日志路径(已压缩且解压后的文件为LogCollect.xlsx同级目录)，必选
+`--bmc_log {BMC_LOG}`， bmc日志路径，必选，多个日志使用逗号分隔
+`--lcne_log {LCNE_LOG}`， lcne日志路径，必选，多个日志使用逗号分隔
 `--output {OUTPUT}`，输出目录，必选
 
 **3、限制说明**
