@@ -25,4 +25,3 @@
 
 **3、限制说明**
 要求host日志路径下文件未压缩，bmc和lcne日志为压缩文件
-### super_pod_diag_ccae.sh
