@@ -52,6 +52,7 @@ spec:
                         - mindx-dls-test
                 topologyKey: kubernetes.io/hostname
         hostNetwork: true
+        automountServiceAccountToken: false
         containers:
         - image: torch:b030               # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent

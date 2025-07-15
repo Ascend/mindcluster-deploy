@@ -23,6 +23,7 @@ spec:
           app: infer
           ring-controller.atlas: ascend-910b
       spec:
+        automountServiceAccountToken: false
         containers:
           - image: infer_image:latest             # Inference image, which can be modified.
             imagePullPolicy: IfNotPresent

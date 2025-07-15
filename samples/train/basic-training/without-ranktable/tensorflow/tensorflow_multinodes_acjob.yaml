@@ -27,6 +27,7 @@ spec:
                         values:
                           - default-test-tensorflow
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module
@@ -98,6 +99,7 @@ spec:
                         values:
                           - default-test-tensorflow
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module

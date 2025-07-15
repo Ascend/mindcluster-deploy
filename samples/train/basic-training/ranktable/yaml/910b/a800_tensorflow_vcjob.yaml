@@ -50,6 +50,7 @@ spec:
                       values:
                         - mindx-dls-test
                 topologyKey: kubernetes.io/hostname
+        automountServiceAccountToken: false
         containers:
         - image: tf_arm64:b030               # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent

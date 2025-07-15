@@ -24,6 +24,7 @@ spec:
             ring-controller.atlas: ascend-910
         spec:
           terminationGracePeriodSeconds: 360
+          automountServiceAccountToken: false
           nodeSelector:                        # modify according to the actual situation
             host-arch: huawei-arm
             accelerator-type: module
@@ -96,6 +97,7 @@ spec:
                         values:
                           - worker
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:                    # modify according to the actual situation
             host-arch: huawei-arm
             accelerator-type: module

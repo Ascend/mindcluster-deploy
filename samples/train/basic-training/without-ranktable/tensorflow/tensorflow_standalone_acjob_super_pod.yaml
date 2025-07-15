@@ -23,6 +23,7 @@ spec:
           labels:
             ring-controller.atlas: ascend-910b
         spec:
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
           containers:

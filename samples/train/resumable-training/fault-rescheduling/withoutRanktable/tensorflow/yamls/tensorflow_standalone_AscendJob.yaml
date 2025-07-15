@@ -24,6 +24,7 @@ spec:
             app: tensorflow
             ring-controller.atlas: ascend-910
         spec:
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module

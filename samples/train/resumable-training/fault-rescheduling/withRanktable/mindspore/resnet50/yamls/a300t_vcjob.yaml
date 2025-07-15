@@ -41,6 +41,7 @@ spec:
           ring-controller.atlas: ascend-910
       spec:
         hostNetwork: true
+        automountServiceAccountToken: false
         containers:
         - image: mindspore-arm:5.0.1             # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent

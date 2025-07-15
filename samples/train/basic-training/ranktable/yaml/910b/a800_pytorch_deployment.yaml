@@ -43,6 +43,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       hostNetwork: true
       schedulerName: volcano         # Use the Volcano scheduler to schedule jobs.
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-x86        # Configure the label based on the actual job.
         accelerator-type: module-910b-16

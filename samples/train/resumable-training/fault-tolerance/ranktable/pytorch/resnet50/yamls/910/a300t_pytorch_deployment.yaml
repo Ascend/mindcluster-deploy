@@ -48,6 +48,7 @@ spec:
     spec:
       hostNetwork: true
       schedulerName: volcano         # Use the Volcano scheduler to schedule jobs.
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm        # Configure the label based on the actual job.
         accelerator-type: card

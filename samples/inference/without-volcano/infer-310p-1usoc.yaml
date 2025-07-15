@@ -5,6 +5,7 @@ metadata:
 spec:
   template:
     spec:
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm
         servertype: soc                         # Cannot be delete. And node should be labeled with this label.

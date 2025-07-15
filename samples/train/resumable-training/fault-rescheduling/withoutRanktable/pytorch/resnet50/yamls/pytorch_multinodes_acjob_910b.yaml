@@ -35,6 +35,7 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16
@@ -120,6 +121,7 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16

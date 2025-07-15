@@ -55,6 +55,7 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           terminationGracePeriodSeconds: 360
+          automountServiceAccountToken: false
           nodeSelector:                        # modify according to the actual situation
             host-arch: huawei-arm
             accelerator-type: module-910b-8
@@ -149,6 +150,7 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           terminationGracePeriodSeconds: 360
+          automountServiceAccountToken: false
           nodeSelector: # modify according to the actual situation
             host-arch: huawei-arm
             accelerator-type: module-910b-8

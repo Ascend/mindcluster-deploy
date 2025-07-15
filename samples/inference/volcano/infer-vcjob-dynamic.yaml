@@ -29,6 +29,7 @@ spec:
             vnpu-level: low                    # For NPU dynamic segmentation,low means low-level configuration,high means performance first,default low.
         spec:
           schedulerName: volcano
+          automountServiceAccountToken: false
           containers:
             - image: ascendhub.huawei.com/public-ascendhub/infer-modelzoo:23.0.RC1-mxvision                  # Inference image name
               imagePullPolicy: IfNotPresent

@@ -21,6 +21,7 @@ spec:
           labels:
             ring-controller.atlas: ascend-910b
         spec:
+          automountServiceAccountToken: false
           nodeSelector:                        # modify according to the actual situation
             host-arch: huawei-x86
             accelerator-type: module-910b-16

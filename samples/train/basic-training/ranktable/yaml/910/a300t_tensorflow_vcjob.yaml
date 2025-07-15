@@ -40,6 +40,7 @@ spec:
           app: tf
           ring-controller.atlas: ascend-910  # The value must be the same as the label in ConfigMap and cannot be changed.
       spec:
+        automountServiceAccountToken: false
         containers:
         - image: tf_arm64:b030               # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent

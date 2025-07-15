@@ -5,6 +5,7 @@ metadata:
 spec:
   template:
     spec:
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm                   # Select the os arch. If the os arch is arm, change it to huawei-x86.
       containers:

@@ -19,6 +19,7 @@ spec:
          vnpu-level: low                # For NPU dynamic segmentation,low means low-level configuration,high means performance first,default low.
     spec:
       schedulerName: volcano
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm           # Select the os arch. If the os arch is x86, change it to huawei-x86.
       containers:

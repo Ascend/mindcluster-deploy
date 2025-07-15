@@ -20,6 +20,7 @@ spec:
           nodeSelector:                        # modify according to the actual situation
             host-arch: huawei-arm
             accelerator-type: module
+          automountServiceAccountToken: false
           containers:
           - name: ascend # do not modify
             image: mindspore-test:latest       # training framework image， which can be modified
@@ -85,6 +86,7 @@ spec:
                         values:
                           - worker
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:                    # modify according to the actual situation
             host-arch: huawei-arm
           containers:

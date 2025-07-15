@@ -17,6 +17,7 @@ spec:
       restartPolicy: Never
       template:
         spec:
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
             accelerator-type: module

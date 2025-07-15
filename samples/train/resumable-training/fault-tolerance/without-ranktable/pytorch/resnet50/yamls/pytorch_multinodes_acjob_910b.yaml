@@ -38,6 +38,7 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           terminationGracePeriodSeconds: 900
+          automountServiceAccountToken: false
           affinity:
             podAntiAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
@@ -129,6 +130,7 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           terminationGracePeriodSeconds: 900
+          automountServiceAccountToken: false
           affinity:
             podAntiAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:

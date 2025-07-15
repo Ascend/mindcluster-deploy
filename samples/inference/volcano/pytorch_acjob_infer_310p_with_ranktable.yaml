@@ -32,6 +32,7 @@ spec:
                         values:
                           - default-infer-test-pytorch-310p
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
           containers:

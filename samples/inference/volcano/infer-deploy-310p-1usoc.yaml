@@ -17,7 +17,8 @@ spec:
          fault-scheduling: grace            # Add this Labels, will reschedule pods in the event of chip failures.
          ring-controller.atlas: ascend-310P # Add this Label, used to check job kind.
     spec:
-      schedulerName: volcano 
+      schedulerName: volcano
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm
         servertype: soc                 # Cannot be delete. And node should be labeled with this label.

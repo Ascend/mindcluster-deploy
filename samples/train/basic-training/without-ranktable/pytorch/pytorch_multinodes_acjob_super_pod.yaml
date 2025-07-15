@@ -33,6 +33,7 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
           containers:
@@ -120,6 +121,7 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
           containers:

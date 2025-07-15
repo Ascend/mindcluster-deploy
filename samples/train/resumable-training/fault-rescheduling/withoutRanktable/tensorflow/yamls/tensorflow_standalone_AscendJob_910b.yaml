@@ -24,6 +24,7 @@ spec:
             app: tensorflow
             ring-controller.atlas: ascend-910b
         spec:
+          automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-x86
             accelerator-type: module-910b-16

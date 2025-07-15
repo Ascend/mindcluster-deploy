@@ -33,6 +33,7 @@ spec:
         deploy-name: mindx-dls-test  # The value must be the same as that of Deployment name.
     spec:
       schedulerName: volcano         # Use the Volcano scheduler to schedule jobs.
+      automountServiceAccountToken: false
       nodeSelector:
         host-arch: huawei-arm        # Configure the label based on the actual job.
       containers:
