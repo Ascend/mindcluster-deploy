@@ -36,16 +36,16 @@
 # 目录说明
 ``` 
 ├─conf                                     # kubeconfig文件生成脚本
-├─dashboard_json                           # grafana部署dashboard的json配置demo文件
-├─doc                                       
+├─doc
+├─mindie                                   # mindie任务日志采集脚本
 ├─npu_collector                            # npu相关信息采集脚本
 │  └─log_rotate_sample
-├─python_examples                          # python语言编写的对接demo代码
 ├─samples                                  # 训练、推理使用的启动脚本、yaml配置demo文件
 │  ├─fault
 │  │  └─1
 │  ├─inference
 │  │  ├─volcano
+│  │  │  └─mindie-ms
 │  │  └─without-volcano
 │  ├─train
 │  │  ├─basic-training
@@ -94,26 +94,12 @@
 │  │      └─fault-tolerance
 │  │          ├─ranktable
 │  │          │  ├─mindspore
-│  │          │  │  ├─pangu_alpha
+│  │          │  │  ├─llama2
 │  │          │  │  │  └─yamls
-│  │          │  │  └─resnet50
-│  │          │  │      └─yamls
-│  │          │  └─pytorch
-│  │          │      ├─gpt-3
-│  │          │      │  └─yamls
-│  │          │      │      └─910B
-│  │          │      └─resnet50
-│  │          │          └─yamls
-│  │          │              ├─910
-│  │          │              └─910B
-│  │          └─without-ranktable
-│  │              ├─mindspore
-│  │              │  ├─pangu_alpha
-│  │              │  │  └─yamls
-│  │              │  └─resnet50
-│  │              │      └─yamls
-│  │              └─pytorch
+│  │          │  │  ├─pangu_alpha
 │  │                  ├─gpt-3
+│  │                  │  └─yamls
+│  │                  ├─llama2
 │  │                  │  └─yamls
 │  │                  └─resnet50
 │  │                      └─yamls
@@ -122,16 +108,5 @@
 │      └─prometheus
 │          ├─base
 │          └─prometheus_operator
-│─super_pod_diag
-|   |
-|   |-super_pod_diag.sh
-│   └─README.md
-└─training_toolkit                            # 配合MindXDL使用的训练工具
-    ├─docs
-    └─training_toolkit
-        ├─config
-        ├─framework_tester
-        ├─logger
-        ├─monitor
-        └─utils
+└─super_pod_diag
 ```
