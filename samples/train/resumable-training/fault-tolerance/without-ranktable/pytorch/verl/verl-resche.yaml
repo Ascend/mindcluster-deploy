@@ -1,0 +1,120 @@
+apiVersion: mindxdl.gitee.com/v1
+kind: AscendJob
+metadata:
+  name: mindspeed-rl
+  labels:
+    framework: pytorch
+    fault-scheduling: "force"                 # must be force
+    fault-retry-times: "100"
+    ring-controller.atlas: ascend-910b
+    subHealthyStrategy: "ignore"
+  annotations:
+    sp-block: "32"
+spec:
+  schedulerName: volcano
+  runPolicy:
+    schedulingPolicy:
+      minAvailable: 2
+      queue: default
+  successPolicy: AllWorkers
+  replicaSpecs:
+    Master:
+      replicas: 1                             # Master must be force 1
+      restartPolicy: Never                    # must be Never
+      template:
+        metadata:
+          labels:
+            ring-controller.atlas: ascend-910b
+        spec:
+          terminationGracePeriodSeconds: 60
+          automountServiceAccountToken: false
+          nodeSelector:
+            host-arch: huawei-arm
+          hostNetwork: true
+          containers:
+            - name: ascend                    # cannot modify
+              image: verl-train:v1            # image name, modify according to actual situation
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+              args:                           # args, modify according to actual situation
+                - |
+                  bash /home/verl/start.sh;
+              ports:
+                - containerPort: 2222         # determined by user
+                  name: ascendjob-port        # cannot modify
+                - containerPort: 6666         # modify according to actual situation
+                  name: ray-port
+                - containerPort: 8888         # modify according to actual situation
+                  name: ray-dash-port
+              resources:
+                limits:
+                  huawei.com/Ascend910: 16
+                requests:
+                  huawei.com/Ascend910: 16
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: localtime
+                  mountPath: /etc/localtime
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
+    Worker:
+      replicas: 1
+      restartPolicy: Never  # 配置为Never
+      template:
+        metadata:
+          labels:
+            ring-controller.atlas: ascend-910b
+        spec:
+          terminationGracePeriodSeconds: 60
+          automountServiceAccountToken: false
+          nodeSelector:
+            host-arch: huawei-arm
+          hostNetwork: true
+          containers:
+            - name: ascend                    # cannot modify
+              image:  verl-train:v1           # image name, modify according to actual situation
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+              args:                           # modify according to actual situation
+                - |
+                  bash /home/verl/start.sh;
+              ports:
+                - containerPort: 2222         # determined by user
+                  name: ascendjob-port        # cannot modify
+              resources:
+                limits:
+                  huawei.com/Ascend910: 16
+                requests:
+                  huawei.com/Ascend910: 16
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: localtime
+                  mountPath: /etc/localtime
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
