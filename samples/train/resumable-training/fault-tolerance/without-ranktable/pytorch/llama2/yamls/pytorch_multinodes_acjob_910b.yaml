@@ -26,7 +26,8 @@ metadata:
     process-recover-enable: "on" # 开启训练进程级恢复
     subHealthyStrategy: "ignore" # 忽略亚健康
   annotations:
-    recover-strategy: "retry,recover,dump,exit" # 开启step重计算、进程级恢复、临终遗言和进程退出
+    wait-reschedule-timeout: "270" # 进程级恢复等待故障节点重调度的超时时间，默认270秒，取值范围30-270。进程级恢复和弹性训练均开启时，则等待此时间后若故障节点调度成功，则进行进程级恢复，否则触发弹性训练
+    recover-strategy: "retry,recover,dump,exit,elastic-training" # 开启step重计算、进程级恢复、临终遗言、进程退出和弹性训练
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -78,6 +79,8 @@ spec:
                 value: "8000"
               - name: PROCESS_RECOVER         # 开启进程级别重调度需注入该环境变量
                 value: "on"
+              - name: MINDIO_WAIT_MINDX_TIME         # mindio暂停训练后等待恢复策略下发时间，未开启进程级重调度，开启弹性训练场景下，建议配置60及以上
+                value: "60"
               - name: POD_IP
                 valueFrom:
                   fieldRef:
@@ -139,6 +142,7 @@ spec:
                   --enable-high-availability \
                   --enable-hbmfault-repair \
                   --enable-worker-reboot \
+                  --enable-elastic-training \
                   --data-path $DATA_PATH \
                   --split 949501 \
                   --log-interval 1 \
@@ -149,6 +153,7 @@ spec:
             # --enable-high-availability：故障快速恢复特性开关，默认关闭，配置后即开启临终遗言功能。
             # --enable-hbmfault-repair：Step级别重计算恢复功能开关，默认关闭，配置后对片上内存进行故障检测，并完成在线修复。需要同时配置--enable-high-availability。
             # --enable-worker-reboot：进程级别重调度功能开关，默认关闭，配置后在发生一般性故障时，进行进程级别调度，继续训练。需同时配置--enable-high-availability。
+            # --enable-elastic-training：弹性训练功能开关源，默认关闭，配置后在发生一般性故障，且集群中无可用空闲资源时，缩容继续训练。需同时配置--enable-high-availability。
             ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
               - containerPort: 2222         # determined by user
                 name: ascendjob-port        # do not modify
@@ -243,6 +248,8 @@ spec:
                 value: "8000"
               - name: PROCESS_RECOVER         # 开启进程级别重调度需注入该环境变量
                 value: "on"
+              - name: MINDIO_WAIT_MINDX_TIME         # mindio暂停训练后等待恢复策略下发时间，未开启进程级重调度，开启弹性训练场景下，建议配置60及以上
+                value: "60"
               - name: POD_IP
                 valueFrom:
                   fieldRef:
@@ -304,6 +311,7 @@ spec:
                 --enable-high-availability \
                 --enable-hbmfault-repair \
                 --enable-worker-reboot \
+                --enable-elastic-training \
                 --data-path $DATA_PATH \
                 --split 949501 \
                 --log-interval 1 \
@@ -314,6 +322,7 @@ spec:
             # --enable-high-availability：故障快速恢复特性开关，默认关闭，配置后即开启临终遗言功能。
             # --enable-hbmfault-repair：Step级别重计算恢复功能开关，默认关闭，配置后对片上内存进行故障检测，并完成在线修复。需要同时配置--enable-high-availability。
             # --enable-worker-reboot：进程级别重调度功能开关，默认关闭，配置后在发生一般性故障时，进行进程级别调度，继续训练。需同时配置--enable-high-availability。
+            # --enable-elastic-training：弹性训练功能开关源，默认关闭，配置后在发生一般性故障，且集群中无可用空闲资源时，缩容继续训练。需同时配置--enable-high-availability。
             ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
               - containerPort: 2222         # determined by user
                 name: ascendjob-port        # do not modify
