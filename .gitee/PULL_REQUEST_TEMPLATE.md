@@ -1,28 +1,11 @@
-<!--  Thanks for sending a pull request!  Here are some tips for you:
+## 问题/功能描述
 
-1) If this is your first time, please read our contributor guidelines: https://gitee.com/mindspore/mindspore/blob/master/CONTRIBUTING.md
-
-2) If you want to contribute your code but don't know who will review and merge, please add label `ascend-assistant` to the pull request, we will find and do it as soon as possible.
--->
-
-**What type of PR is this?**
-> Uncomment only one ` /kind <>` line, hit enter to put that in a new line, and remove leading whitespaces from that line:
->
-> /kind bug
-> /kind task
-> /kind feature
+## 修改方案描述
 
 
-**What does this PR do / why do we need it**:
+## 开发自检
 
-
-**Which issue(s) this PR fixes**:
-<!--
-*Automatically closes linked issue when PR is merged.
-Usage: `Fixes #<issue number>`, or `Fixes (paste link of issue)`.
--->
-Fixes #
-
-**Special notes for your reviewers**:
-
-
+- [ ] 规范：是否完成开发自验
+- [ ] 规范：是否涉及资料改动，并已完成修改
+- [ ] 安全：是否涉及对外接口/参数/环境变量改动，并同步修改资料
+- [ ] 安全：是否新增对外接口/参数，并进行校验
