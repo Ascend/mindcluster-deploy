@@ -6,7 +6,9 @@ metadata:
     framework: pytorch
     ring-controller.atlas: ascend-910b
   annotations:
-    sp-block: "16"  # when is standalone job it should equal to job req npu, when is distributed job it should be multiple of node npu
+    # when is standalone job it should equal to job req npu, when is distributed job it should be multiple of node npu
+    # optional. when this field is not configured, the volcano assumes that sp-block size is equal to the total number of NPUs for the task
+    sp-block: "16"
 spec:
   schedulerName: volcano  # work when enableGangScheduling is true
   runPolicy:
@@ -26,6 +28,7 @@ spec:
           automountServiceAccountToken: false
           nodeSelector:
             host-arch: huawei-arm
+            accelerator-type: module-a3-16-super-pod
           containers:
           - name: ascend # do not modify
             image: pytorch-test:latest      # training framework image， which can be modified
