@@ -46,6 +46,7 @@
 │  ├─inference
 │  │  ├─volcano
 │  │  │  └─mindie-ms
+│  │  └─without-k8s
 │  │  └─without-volcano
 │  ├─train
 │  │  ├─basic-training
