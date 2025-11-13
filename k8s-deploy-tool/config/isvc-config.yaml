@@ -1,16 +1,16 @@
-app_name: "my-test"
-app_namespace: "default"
+app_name: "my-test"                          # 应用名称，必填
+app_namespace: "default"                     # 应用命名空间，选填，默认值为"default"
 
-inference_service:
-  model_name: "llama-3-1-8b-instruct"
-  runtime_name: "llama-3-1-8b-rt"
-  engine:
-    min_replicas: 1
-    max_replicas: 1
-    pod_num: 1
-    image: "sglang:11.11.1"
-    npu_num: 1
-    labels:
+inference_service:                           # 推理服务配置，下属字段至少存在一个
+  model_name: "llama-3-1-8b-instruct"        # 模型名称，必填
+  runtime_name: "llama-3-1-8b-rt"            # 运行时名称，选填，如果不填，ome-controller-manager会根据model_name选取集群中存在的runtime
+  engine:                                    # engine配置，下属字段至少存在一个。engine、decoder、router中的字段会被合并到runtime中，并且此处设置字段优先级更高
+    min_replicas: 1                          # 最小副本数，选填，默认值为1，当前要求大于0
+    max_replicas: 1                          # 最大副本数，选填，默认值为1，要求大于等于
+    pod_num: 1                               # 实例pod数量，选填，默认值为1
+    image: "sglang:11.11.1"                  # 容器镜像，选填，如果不填，会使用runtime中配置的image
+    npu_num: 1                               # 每个容器中的npu数量，选填，默认值为1
+    labels:                                  # labels、annotations、node_selector、env_vars均为选填，如果存在，会覆盖runtime中配置的对应字段，此处xxx,yyy无实际意义，用户可以删除
       xxx: yyy
     annotations:
       xxx: yyy
@@ -19,12 +19,12 @@ inference_service:
     env_vars:
       xxx: yyy
 
-    dp_size: 1
+    dp_size: 1                                # dp_size、tp_size、pp_size为模型并行参数，选填，默认值为1，用户根据模型并行需求设置
     tp_size: 1
     pp_size: 1
 
-  decoder:
-    min_replicas: 1
+  decoder:                                    # decoder配置，下属字段至少存在一个。下属字段与engine字段说明相同
+    min_replicas: 1                      
     max_replicas: 1
     pod_num: 1
     image: "sglang:11.11.1"
@@ -44,10 +44,10 @@ inference_service:
     pp_size: 1
 
   router:
-    min_replicas: 1
-    max_replicas: 1
-    image: "sglang:11.11.1"
-    labels:
+    min_replicas: 1                           # 最小副本数，选填，默认值为1，当前要求大于0
+    max_replicas: 1                           # 最大副本数，选填，默认值为1，要求大于等于
+    image: "sglang:11.11.1"                   # 容器镜像，选填，如果不填，会使用runtime中配
+    labels:                                   # labels、annotations、node_selector、env_vars均为选填，如果存在，会覆盖runtime中配置的对应字段，此处xxx,yyy无实际意义，用户可以删除
       xxx: yyy
     annotations:
       xxx: yyy
@@ -55,14 +55,14 @@ inference_service:
       xxx: yyy  
 
 mf_store:
-  image: "sglang:test"
-  replicas: 1
-  container_port: 9000
-  env_vars:
+  image: "sglang:test"                         # mf_store镜像，选填，如果不填，会使用模板中的image
+  replicas: 1                                  # mf_store副本数，选填，默认值为1，当前要求仅为1
+  container_port: 9000                         # mf_store服务端口，选填，默认值为9000
+  env_vars:                                    # node_selector、env_vars均为选填，如果存在，会覆盖模板中配置的对应字段，此处xxx,yyy无实际意义，用户可以删除
     xxx: yyy
   node_selector:
     xxx: yyy
-  resources:
+  resources:                                   # 资源配置
    requests:
      memory: "128Mi"
      cpu: "100m"
