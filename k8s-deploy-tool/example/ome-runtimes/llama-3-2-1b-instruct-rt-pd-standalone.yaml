@@ -1,0 +1,193 @@
+piVersion: ome.io/v1beta1
+kind: ClusterServingRuntime
+metadata:
+  name: srt-llama-3-2-1b-instruct-standalone
+spec:
+  decoderConfig:
+    runner:
+      name: sglang-decoder
+      image: "sglang:11.1.1"
+      command:
+      - /bin/bash
+      - -c
+      - >
+        export ASCEND_MF_STORE_IP=$(python -c "import socket, os; print(socket.gethostbyname(os.getenv('ASCEND_MF_STORE_ADDRESS')))");
+        export ASCEND_MF_STORE_URL="tcp://${ASCEND_MF_STORE_IP}:9000";
+        python3 -m sglang.launch_server
+        --model-path ${MODEL_PATH}
+        --disaggregation-mode decode
+        --disaggregation-transfer-backend ascend
+        --attention-backend ascend
+        --device npu
+        --disable-overlap-schedule
+        --watchdog-timeout 300
+        --mem-fraction-static 0.785
+        --port 8080
+        --host ${POD_IP}
+        --tp-size ${TP_SIZE}
+        --dp-size ${DP_SIZE}
+      securityContext:
+        privileged: true
+      env:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: ASCEND_VISIBLE_DEVICES
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['huawei.com/Ascend910']
+      
+      resources:
+        limits:
+          huawei.com/Ascend910: 16
+        requests:
+          huawei.com/Ascend910: 16
+      volumeMounts:
+      - mountPath: /mnt
+        name: model
+      - name: shm
+        mountPath: /dev/shm
+      - name: driver
+        mountPath: /usr/local/Ascend/driver
+    volumes:
+    - name: model
+      hostPath: 
+        path: /mnt
+    - name: driver
+      hostPath:
+        path: /usr/local/Ascend/driver    
+    - name: shm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 128Gi
+  disabled: false
+  engineConfig:
+    runner:
+      name: sglang-engine
+      image: "sglang:11.1.1"
+      command:
+      - /bin/bash
+      - -c
+        #- sleep inf
+      - >
+        export ASCEND_MF_STORE_IP=$(python -c "import socket, os; print(socket.gethostbyname(os.getenv('ASCEND_MF_STORE_ADDRESS')))");
+        export ASCEND_MF_STORE_URL="tcp://${ASCEND_MF_STORE_IP}:9000";
+        python3 -m sglang.launch_server
+        --model-path ${MODEL_PATH}
+        --disaggregation-mode prefill
+        --disaggregation-transfer-backend ascend
+        --attention-backend ascend
+        --device npu
+        --disable-overlap-schedule
+        --watchdog-timeout 300
+        --mem-fraction-static 0.785
+        --host ${POD_IP}
+        --port 8080
+        --tp-size ${TP_SIZE}
+        --dp-size ${DP_SIZE}
+      securityContext:
+        privileged: true
+      env: 
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: ASCEND_VISIBLE_DEVICES
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['huawei.com/Ascend910']            
+      resources:
+        limits:
+          huawei.com/Ascend910: 16
+        requests:
+          huawei.com/Ascend910: 16
+      volumeMounts:
+      - mountPath: /mnt
+        name: model
+      - name: shm
+        mountPath: /dev/shm
+      - name: driver
+        mountPath: /usr/local/Ascend/driver
+    volumes:
+    - name: model
+      hostPath:
+        path: /mnt
+    - name: driver
+      hostPath:
+        path: /usr/local/Ascend/driver
+    - name: shm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 128Gi        
+  modelSizeRange:
+    max: 10B
+    min: 6B
+  protocolVersions:
+  - openAI
+  routerConfig:
+    #hostNetwork: true
+    runner:
+      args:
+      - |
+        unset http_proxy https_proxy; 
+        python3 -m sglang_router.launch_router \
+        --prefill-selector component=engine ome.io/inferenceservice=${INFERENCESERVICE_NAME} \
+        --decode-selector component=decoder ome.io/inferenceservice=${INFERENCESERVICE_NAME} \
+        --log-level debug \
+        --host ${POD_IP} \
+        --port "8000" \
+        --pd-disaggregation \
+        --service-discovery \
+        --service-discovery-namespace "${NAMESPACE}" \
+        --service-discovery-port 8080 \
+        --log-dir /var/log/sglang-router 
+      command:
+      - /bin/bash
+      - -lc
+      - --
+      env:
+      - name: NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: INFERENCESERVICE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['ome.io/inferenceservice']
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      image: sglang:11.1.1
+      name: sglang-router
+      ports:
+      - containerPort: 8000
+        name: http
+        protocol: TCP
+      resources:
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      volumeMounts:
+      - name: log-path
+        mountPath: /var/log/sglang-router
+    volumes:
+    - name: log-path
+      hostPath:
+        path: /var/log/sglang-router
+        type: DirectoryOrCreate
+  supportedModelFormats:
+  - autoSelect: false
+    modelArchitecture: LlamaForCausalLM
+    modelFormat:
+      name: safetensors
+      operator: Equal
+      version: 1.0.0
+      weight: 1
+    modelFramework:
+      name: transformers
+      operator: Equal
+      version: 4.42.3
+      weight: 1
+    priority: 1
