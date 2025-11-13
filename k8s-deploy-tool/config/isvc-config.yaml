@@ -1,0 +1,71 @@
+app_name: "my-test"
+app_namespace: "default"
+
+inference_service:
+  model_name: "llama-3-1-8b-instruct"
+  runtime_name: "llama-3-1-8b-rt"
+  engine:
+    min_replicas: 1
+    max_replicas: 1
+    pod_num: 1
+    image: "sglang:11.11.1"
+    npu_num: 1
+    labels:
+      xxx: yyy
+    annotations:
+      xxx: yyy
+    node_selector:
+      xxx: yyy
+    env_vars:
+      xxx: yyy
+
+    dp_size: 1
+    tp_size: 1
+    pp_size: 1
+
+  decoder:
+    min_replicas: 1
+    max_replicas: 1
+    pod_num: 1
+    image: "sglang:11.11.1"
+    npu_num: 1
+
+    labels:
+      xxx: yyy
+    annotations:
+      xxx: yyy
+    node_selector:
+      xxx: yyy
+    env_vars:
+      xxx: yyy
+
+    dp_size: 1
+    tp_size: 1
+    pp_size: 1
+
+  router:
+    min_replicas: 1
+    max_replicas: 1
+    image: "sglang:11.11.1"
+    labels:
+      xxx: yyy
+    annotations:
+      xxx: yyy
+    node_selector:
+      xxx: yyy  
+
+mf_store:
+  image: "sglang:test"
+  replicas: 1
+  container_port: 9000
+  env_vars:
+    xxx: yyy
+  node_selector:
+    xxx: yyy
+  resources:
+   requests:
+     memory: "128Mi"
+     cpu: "100m"
+   limits:
+     memory: "512Mi"
+     cpu: "500m"
