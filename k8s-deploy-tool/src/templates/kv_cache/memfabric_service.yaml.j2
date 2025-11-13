@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ app_name }}-mf-store
+  namespace: {{ app_namespace | default("default") }}
+  labels:
+    memfabric.ascend.com/name: {{ app_name }}
+
+spec:  
+  type: "ClusterIP"
+  selector:
+    memfabric.ascend.com/name: {{ app_name }}
+  ports:
+  - port: 9000
+    targetPort: {{ mf_store.container_port | default(9000) }}
+    protocol: TCP
+    name: http
