@@ -1,0 +1,273 @@
+{#
+InferenceService Jinja2 模板
+支持动态配置大模型推理服务，适用于PD分离架构
+#}
+apiVersion: ome.io/v1beta1
+kind: InferenceService
+metadata:
+  name: {{ app_name }}
+  namespace: {{ app_namespace | default("default") }}
+spec:
+  model:
+    name: {{ inference_service.model_name }}
+  {% if inference_service.runtime_name is defined %}
+  runtime:
+    name: {{ inference_service.runtime_name }}
+  {% endif %}
+  {%- set engine = inference_service.engine %}
+  engine:
+    {% if engine.labels is defined %}
+    labels:
+      {% for key, value in engine.labels.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if engine.annotations is defined %}
+    annotations:
+      {% for key, value in engine.annotations.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if engine.pod_num == 1 %}
+    schedulerName: volcano
+    runner:
+      name: ome-container
+      image: {{ engine.image }}
+      env:
+        - name: DP_SIZE
+          value: "{{ engine.dp_size | default(1) }}"
+        - name: TP_SIZE
+          value: "{{ engine.tp_size | default(1) }}"
+        - name: PP_SIZE
+          value: "{{ engine.pp_size | default(1) }}"
+        - name: ASCEND_MF_STORE_ADDRESS
+          value: "{{ app_name }}-mf-store"
+        {% if engine.env_vars is defined %}
+        {% for key, value in engine.env_vars.items() %}
+        - name: {{ key }}
+          value: "{{ value }}"
+        {% endfor %}
+        {% endif %}
+      resources:
+        requests:
+          huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+        limits:
+          huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+    {% if engine.node_selector is defined %}
+    nodeSelector:
+      {% for key, value in engine.node_selector.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% endif %}
+    minReplicas: {{ engine.min_replicas }}
+    maxReplicas: {{ engine.max_replicas }}
+    {% if engine.pod_num > 1 %}
+    leader:
+      schedulerName: volcano
+      {% if engine.node_selector is defined %}
+      nodeSelector:
+        {% for key, value in engine.node_selector.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+      runner:
+        name: ome-container
+        image: {{ engine.image }}
+        env:
+          - name: DP_SIZE
+            value: "{{ engine.dp_size | default(1) }}"
+          - name: TP_SIZE
+            value: "{{ engine.tp_size | default(1) }}"
+          - name: PP_SIZE
+            value: "{{ engine.pp_size | default(1) }}"
+          - name: ASCEND_MF_STORE_ADDRESS
+            value: "{{ app_name }}-mf-store"
+          {% if engine.env_vars is defined %}
+          {% for key, value in engine.env_vars.items() %}
+          - name: {{ key }}
+            value: "{{ value }}"
+          {% endfor %}
+          {% endif %}
+        resources:
+          requests:
+            huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+          limits:
+            huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+    worker:
+      schedulerName: volcano
+      size: {{ engine.pod_num - 1 | default(1) }}
+      {% if engine.node_selector is defined %}
+      nodeSelector:
+        {% for key, value in engine.node_selector.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+      runner:
+        name: ome-container
+        image: {{ engine.image }}
+        resources:
+          requests:
+            huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+          limits:
+            huawei.com/Ascend910: {{ engine.npu_num | default(8) }}
+        env:
+          - name: DP_SIZE
+            value: "{{ engine.dp_size | default(1) }}"
+          - name: TP_SIZE
+            value: "{{ engine.tp_size | default(1) }}"
+          - name: PP_SIZE
+            value: "{{ engine.pp_size | default(1) }}"
+          - name: ASCEND_MF_STORE_ADDRESS
+            value: "{{ app_name }}-mf-store"
+          {% if engine.env_vars is defined %}
+          {% for key, value in engine.env_vars.items() %}
+          - name: {{ key }}
+            value: "{{ value }}"
+          {% endfor %}
+          {% endif %}
+    {% endif %}
+  {# 解码器配置 - 可选部分 #}
+  {%- if inference_service.decoder is defined %}
+  {%- set decoder = inference_service.decoder %}
+  decoder:
+    minReplicas: {{ decoder.min_replicas }}
+    maxReplicas: {{ decoder.max_replicas }}
+    {% if decoder.labels is defined %}
+    labels:
+      {% for key, value in decoder.labels.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if decoder.annotations is defined %}
+    annotations:
+      {% for key, value in decoder.annotations.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if decoder.pod_num == 1 %}
+    schedulerName: volcano
+    runner:
+      name: ome-container
+      image: {{ decoder.image }}
+      env:
+        - name: DP_SIZE
+          value: "{{ decoder.dp_size | default(1) }}"
+        - name: TP_SIZE
+          value: "{{ decoder.tp_size | default(1) }}"
+        - name: PP_SIZE
+          value: "{{ decoder.pp_size | default(1) }}"
+        - name: ASCEND_MF_STORE_ADDRESS
+          value: "{{ app_name }}-mf-store"
+        {% if decoder.env_vars is defined %}
+        {% for key, value in decoder.env_vars.items() %}
+        - name: {{ key }}
+          value: "{{ value }}"
+        {% endfor %}
+        {% endif %}
+      resources:
+        requests:
+          huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+        limits:
+          huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+    {% if decoder.node_selector is defined %}
+    nodeSelector:
+      {% for key, value in decoder.node_selector.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% endif %}
+    {% if decoder.pod_num > 1 %}
+    leader:
+      schedulerName: volcano
+      {% if decoder.node_selector is defined %}
+      nodeSelector:
+        {% for key, value in decoder.node_selector.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+      runner:
+        name: ome-container
+        image: {{ decoder.image }}
+        env:
+          - name: DP_SIZE
+            value: "{{ decoder.dp_size | default(1) }}"
+          - name: TP_SIZE
+            value: "{{ decoder.tp_size | default(1) }}"
+          - name: PP_SIZE
+            value: "{{ decoder.pp_size | default(1) }}"
+          - name: ASCEND_MF_STORE_ADDRESS
+            value: "{{ app_name }}-mf-store"
+          {% if decoder.env_vars is defined %}
+          {% for key, value in decoder.env_vars.items() %}
+          - name: {{ key }}
+            value: "{{ value }}"
+          {% endfor %}
+          {% endif %}
+        resources:
+          requests:
+            huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+          limits:
+            huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+    worker:
+      schedulerName: volcano
+      size: {{ decoder.pod_num - 1 | default(1) }}
+      {% if decoder.node_selector is defined %}
+      nodeSelector:
+        {% for key, value in decoder.node_selector.items() %}
+        {{ key }}: "{{ value }}"
+        {% endfor %}
+      {% endif %}
+      runner:
+        name: ome-container
+        image: {{ decoder.image }}
+        resources:
+          requests:
+            huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+          limits:
+            huawei.com/Ascend910: {{ decoder.npu_num | default(8) }}
+        env:
+          - name: DP_SIZE
+            value: "{{ decoder.dp_size | default(1) }}"
+          - name: TP_SIZE
+            value: "{{ decoder.tp_size | default(1) }}"
+          - name: PP_SIZE
+            value: "{{ decoder.pp_size | default(1) }}"        
+          - name: ASCEND_MF_STORE_ADDRESS
+            value: "{{ app_name }}-mf-store"
+          {% if decoder.env_vars is defined %}
+          {% for key, value in decoder.env_vars.items() %}
+          - name: {{ key }}
+            value: "{{ value }}"
+          {% endfor %}
+          {% endif %}
+    {% endif %}
+  {% endif %}
+  {# 路由器配置 - 可选部分 #}
+  {%- if inference_service.router is defined %}
+  {%- set router = inference_service.router %}
+  router:
+    {% if router.labels is defined %}
+    labels:
+      {% for key, value in router.labels.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if router.annotations is defined %}
+    annotations:
+      {% for key, value in router.annotations.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    {% if router.node_selector is defined %}
+    nodeSelector:
+      {% for key, value in router.node_selector.items() %}
+      {{ key }}: "{{ value }}"
+      {% endfor %}
+    {% endif %}
+    minReplicas: {{ router.min_replicas }}
+    maxReplicas: {{ router.max_replicas }}
+    runner:
+      name: sglang-router
+      image: {{ router.image }}
+  {% endif %}

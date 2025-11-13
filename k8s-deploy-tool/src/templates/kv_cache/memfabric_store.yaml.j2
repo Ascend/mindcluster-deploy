@@ -1,0 +1,99 @@
+{#
+Deployment 和 Service 的 Jinja2 模板
+支持多环境动态配置，包含健康检查、资源限制等生产级参数
+#}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app_name }}-mf-store
+  namespace: {{ app_namespace | default("default") }}
+  labels:
+    memfabric.ascend.com/name: {{ app_name }}
+    ome.io/inferenceservice: {{ app_name }}
+spec:
+  replicas: {{ mf_store.replicas | default(1) }}
+  selector:
+    matchLabels:
+      memfabric.ascend.com/name: {{ app_name }}
+      ome.io/inferenceservice: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        memfabric.ascend.com/name: {{ app_name }}
+        ome.io/inferenceservice: {{ app_name }}
+        component: mf-store
+    spec:
+      containers:
+      - name: ms-store
+        image: "{{ mf_store.image }}"
+        imagePullPolicy: "IfNotPresent"
+        command: 
+        - /bin/bash
+        - -c
+        - source /usr/local/Ascend/ascend-toolkit/set_env.sh; source /usr/local/Ascend/nnal/atb/set_env.sh; python -m launch_ascend_mf_store
+        ports:
+        - containerPort: {{ mf_store.container_port | default(9000) }}
+          protocol: TCP
+          name: http
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MF_STORE_PORT
+          value: "{{ mf_store.container_port | default(80) }}"
+        - name: ASCEND_MF_STORE_URL
+          value: "tcp://$(POD_IP):$(MF_STORE_PORT)"
+        {% if mf_store.env_vars is defined %}
+        {% for key, value in mf_store.env_vars | default({}) | dictsort %}
+        - name: {{ key }}
+          value: "{{ value }}"
+        {% endfor %}
+        {% endif %}
+        {% if mf_store.resources is defined %}
+        {%- set resources = mf_store.resources %}
+        resources:
+          requests:
+            memory: "{{ resources.requests.memory | default('64Mi') }}"
+            cpu: "{{ resources.requests.cpu | default('50m') }}"
+          limits:
+            memory: "{{ resources.limits.memory | default('256Mi') }}"
+            cpu: "{{ resources.limits.cpu | default('500m') }}"
+        {% endif %}
+        {% if mf_store.liveness_probe is defined %}
+        {%- set probes = mf_store.probes %}
+        livenessProbe:
+          httpGet:
+            path: {{ liveness_probe.path | default("/health") }}
+            port: {{ liveness_probe.port | default(container_port | default(80)) }}
+          initialDelaySeconds: {{ liveness_probe.initial_delay_seconds | default(30) }}
+          periodSeconds: {{ liveness_probe.period_seconds | default(10) }}
+          failureThreshold: {{ liveness_probe.failure_threshold | default(3) }}
+        {% endif %}
+        {% if mf_store.readiness_probe is defined %}
+        {%- set readiness_probe = mf_store.readiness_probe %}
+        readinessProbe:
+          httpGet:
+            path: {{ readiness_probe.path | default("/ready") }}
+            port: {{ readiness_probe.port | default(container_port | default(80)) }}
+          initialDelaySeconds: {{ readiness_probe.initial_delay_seconds | default(5) }}
+          periodSeconds: {{ readiness_probe.period_seconds | default(5) }}
+          failureThreshold: {{ readiness_probe.failure_threshold | default(3) }}
+        {% endif %}
+        {% if mf_store.startup_probe is defined %}
+        {%- set startup_probe = mf_store.startup_probe %}
+        startupProbe:
+          httpGet:
+            path: {{ startup_probe.path | default("/startup") }}
+            port: {{ startup_probe.port | default(container_port | default(80)) }}
+          initialDelaySeconds: {{ startup_probe.initial_delay_seconds | default(10) }}
+          periodSeconds: {{ startup_probe.period_seconds | default(5) }}
+          failureThreshold: {{ startup_probe.failure_threshold | default(10) }}
+        {% endif %}
+      {% if mf_store.node_selector is defined %}
+      nodeSelector:
+        {% for key, value in mf_store.node_selector.items() %}
+        {{ key }}: {{ value }}
+        {% endfor %}
+      {% endif %}
