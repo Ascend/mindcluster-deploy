@@ -1,9 +1,10 @@
-piVersion: ome.io/v1beta1
+apiVersion: ome.io/v1beta1
 kind: ClusterServingRuntime
 metadata:
   name: srt-llama-3-2-1b-instruct-standalone
 spec:
   decoderConfig:
+    schedulerName: volcano
     runner:
       name: sglang-decoder
       image: "sglang:11.1.1"
@@ -63,6 +64,7 @@ spec:
         sizeLimit: 128Gi
   disabled: false
   engineConfig:
+    schedulerName: volcano
     runner:
       name: sglang-engine
       image: "sglang:11.1.1"
