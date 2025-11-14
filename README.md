@@ -35,8 +35,6 @@
 
 # 目录说明
 ``` 
-├─conf                                     # kubeconfig文件生成脚本
-├─doc
 ├─mindie                                   # mindie任务日志采集脚本
 ├─npu_collector                            # npu相关信息采集脚本
 │  └─log_rotate_sample
@@ -46,7 +44,6 @@
 │  ├─inference
 │  │  ├─volcano
 │  │  │  └─mindie-ms
-│  │  └─without-k8s
 │  │  └─without-volcano
 │  ├─train
 │  │  ├─basic-training
@@ -98,12 +95,35 @@
 │  │          │  │  ├─llama2
 │  │          │  │  │  └─yamls
 │  │          │  │  ├─pangu_alpha
+│  │          │  │  │  └─yamls
+│  │          │  │  ├─Qwen3
+│  │          │  │  │  └─yamls
+│  │          │  │  └─resnet50
+│  │          │  │      └─yamls
+│  │          │  └─pytorch
+│  │          │      ├─gpt-3
+│  │          │      │  └─yamls
+│  │          │      │      └─910B
+│  │          │      └─resnet50
+│  │          │          └─yamls
+│  │          │              ├─910
+│  │          │              └─910B
+│  │          └─without-ranktable
+│  │              ├─mindspore
+│  │              │  ├─pangu_alpha
+│  │              │  │  └─yamls
+│  │              │  └─resnet50
+│  │              │      └─yamls
+│  │              └─pytorch
 │  │                  ├─gpt-3
 │  │                  │  └─yamls
 │  │                  ├─llama2
 │  │                  │  └─yamls
-│  │                  └─resnet50
-│  │                      └─yamls
+│  │                  ├─Qwen3
+│  │                  │  └─yamls
+│  │                  ├─resnet50
+│  │                  │  └─yamls
+│  │                  └─verl
 │  └─utils
 │      ├─env_validation
 │      └─prometheus
