@@ -16,17 +16,17 @@ export SERVING_FRAMEWORK=ome
 ### 3. 部署应用
 
 ```
-python main.py deploy -c configs/isvc-config.yaml
+python main.py deploy -c config/isvc-config.yaml
 参数说明：
 -c, --config: 配置文件路径，必填
 -k, --kubeconfig: kubeconfig文件路径，选填，默认值为~/.kube/config
---dry-run: 试运行（不实际部署）
+--dry-run: 试运行（不实际部署），选填
 ```
 
 ### 4. 查看状态
 
 ```
-python main.py status -n my-webapp -ns default
+python main.py status -n my-test -ns default
 参数说明：
 -n, --app-name: 应用名称，必填
 -ns, --namespace: 应用命名空间，选填，默认值为"default"
@@ -36,7 +36,7 @@ python main.py status -n my-webapp -ns default
 ### 5. 删除应用
 
 ```
-python main.py delete -n my-webapp -ns default
+python main.py delete -n my-test -ns default
 参数说明：
 -n, --app-name: 应用名称，必填
 -ns, --namespace: 应用命名空间，选填，默认值为"default"

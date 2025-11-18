@@ -12,6 +12,7 @@ spec:
       - /bin/bash
       - -c
       - >
+        sleep 10;  # wait for the mf_store to be ready, do not delete
         export ASCEND_MF_STORE_IP=$(python -c "import socket, os; print(socket.gethostbyname(os.getenv('ASCEND_MF_STORE_ADDRESS')))");
         export ASCEND_MF_STORE_URL="tcp://${ASCEND_MF_STORE_IP}:9000";
         python3 -m sglang.launch_server
@@ -71,8 +72,8 @@ spec:
       command:
       - /bin/bash
       - -c
-        #- sleep inf
       - >
+        sleep 10;  # wait for the mf_store to be ready, do not delete
         export ASCEND_MF_STORE_IP=$(python -c "import socket, os; print(socket.gethostbyname(os.getenv('ASCEND_MF_STORE_ADDRESS')))");
         export ASCEND_MF_STORE_URL="tcp://${ASCEND_MF_STORE_IP}:9000";
         python3 -m sglang.launch_server
