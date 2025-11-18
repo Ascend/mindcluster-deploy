@@ -181,7 +181,7 @@ class ISVCManager(JobManager):
         if "model_name" not in isvc:
             raise ValueError("inference_service缺少model_name字段")
         if "engine" not in isvc:
-            raise ValueError("inference_service缺少app_name字段")
+            raise ValueError("inference_service缺少engine字段")
         engine = isvc["engine"]
         self._validate_instance(engine)
         if "decoder" in isvc:
@@ -192,31 +192,31 @@ class ISVCManager(JobManager):
         """验证实例配置"""
         if "min_replicas" in instance:
             if not isinstance(instance["min_replicas"], int) or instance["min_replicas"] < 1:
-                raise ValueError("engine.min_replicas必须为大于0的整数")
+                raise ValueError("min_replicas必须为大于0的整数")
 
         if "max_replicas" in instance:
             if not isinstance(instance["max_replicas"], int) or instance["max_replicas"] < 1 or instance["max_replicas"] < instance["min_replicas"] or instance["max_replicas"] > 64:
-                raise ValueError("engine.max_replicas必须为大于0的整数, 且不小于min_replicas, 不大于512")
+                raise ValueError("max_replicas必须为大于0的整数, 且不小于min_replicas, 不大于512")
         
         if "pod_num" not in instance:
             raise ValueError("engine缺少pod_num字段")
         
         if not isinstance(instance["pod_num"], int) or instance["pod_num"] < 1 or instance["pod_num"] > 128:
-            raise ValueError("engine.pod_num必须为大于0的整数, 且不大于128")
+            raise ValueError("pod_num必须为大于0的整数, 且不大于128")
 
         if "image" in instance:
             if not isinstance(instance["image"], str) or not instance["image"] :
-                raise ValueError("engine.image必须为非空字符串")
+                raise ValueError("image必须为非空字符串")
             image = instance["image"]
             if ":" not in image:
-                raise ValueError("engine.image格式不正确, 需包含tag信息")
+                raise ValueError("image格式不正确, 需包含tag信息")
             image_name, image_tag = image.rsplit(":", 1)
             if not image_name or not image_tag:
-                raise ValueError("engine.image格式不正确, 镜像名或tag不能为空")
+                raise ValueError("image格式不正确, 镜像名或tag不能为空")
         
         if "npu_num" in instance:
             if not isinstance(instance["npu_num"], int) or instance["npu_num"] < 0 or instance["npu_num"] > 16:
-                raise ValueError("engine.npu_num必须为大于等于0的整数, 且不大于16")
+                raise ValueError("npu_num必须为大于等于0的整数, 且不大于16")
         
     def render_template(self, config) -> dict:
         """渲染模板"""

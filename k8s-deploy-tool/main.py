@@ -35,11 +35,11 @@ def deploy(config, kubeconfig, dry_run):
                 click.echo(f"\n--- {resource_type} ---")
                 click.echo(yaml_content)
         else:
-            click.echo("✅ 应用部署成功!")
+            click.echo("✅ 应用下发成功!")
             click.echo(f"应用名称: {result['config']['app_name']}")
             
     except Exception as e:
-        click.echo(f"❌ 部署失败: {str(e)}", err=True)
+        click.echo(f"❌ 应用下发失败: {str(e)}", err=True)
 
 @cli.command()
 @click.option('--app-name', '-n', required=True, help='要删除的应用名称')
