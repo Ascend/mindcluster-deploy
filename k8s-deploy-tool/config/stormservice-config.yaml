@@ -1,0 +1,44 @@
+
+app_name: "llm-service"                            # 应用名称，必填
+app_namespace: "default"                 # 应用命名空间，选填，默认值为"default"
+
+storm_service:                                     # 推理服务配置，下属字段至少存在一个
+  model_name: "qwen3-moe"                             # 模型名称，必填
+  model_path: "/mnt/models/Qwen3-30B-A3B-Instruct-2507"                # 模型文件路径，必填
+  distributed_dp: "true"                           # 是否使用分布式数据并行，选填，默认值为"true",如果设置为true，需要配置routing
+  prefill:                                         # prefill实例配置，下属字段至少存在一个
+    replicas: 2                                    # prefill实例副本数，选填，默认值为"1"
+    podGroupSize: 1                                # prefill实例pod组大小，选填，默认值为"1"
+    dp_size: 2                                     # prefill实例数据并行大小，选填，默认值为"1"
+    tp_size: 8                                     # prefill实例张量并行大小，选填，默认值为"1"
+    npu_num: 16                                    # prefill实例每个Pod的npu数量，选填，默认值为"1"
+    image: "vllm-ascend:test"                     # prefill实例使用的镜像，必填
+    annotations:                                   # prefill实例使用的注解，选填, 
+      sp-block: "16"
+    labels:                                        # prefill实例使用的标签，选填
+      fault-rescheduling: "force"
+    nodeSelector:                                  # prefill实例使用的节点选择器，选填
+      accelerator-type: module-a3-16-super-pod
+  decode:                                          # decode实例配置，下属字段至少存在一个
+    replicas: 1                                    # decode实例副本数，选填，默认值为"1"
+    podGroupSize: 2                                # decode实例pod组大小，选填，默认值为"1"
+    dp_size: 32                                    # decode实例数据并行大小，选填，默认值为"1"
+    tp_size: 1                                     # decode实例张量并行大小，选填，默认值为"1"
+    npu_num: 16                                    # decode实例每个Pod的npu数量，选填，默认值为"1"
+    image: "vllm-ascend:test"                     # decode实例使用的镜像，必填
+    annotations:                                   # decode实例使用的注解，选填,
+      sp-block: "32"    
+    labels:                                        # decode实例使用的标签，选填
+      fault-rescheduling: "force"            
+    nodeSelector:                                  # decode实例使用的节点选择器，选填
+      accelerator-type: module-a3-16-super-pod
+  routing:                                         # routing实例配置，选填，如果每个实例对外提供服务的端口不只一个，需要配置routing实例
+    replicas: 1
+    image: "vllm-ascend:test"
+    server_port: 8080
+    annotations:                                   # decode实例使用的注解，选填,
+      sp-block: "1"    
+    labels:                                        # decode实例使用的标签，选填
+      fault-rescheduling: "force"            
+    nodeSelector:                                  # decode实例使用的节点选择器，选填
+      accelerator-type: module-a3-16-super-pod

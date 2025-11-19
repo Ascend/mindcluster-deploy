@@ -32,8 +32,14 @@ def deploy(config, kubeconfig, dry_run):
         if dry_run:
             click.echo("=== 生成的YAML配置 ===")
             for resource_type, yaml_content in result['rendered_templates'].items():
-                click.echo(f"\n--- {resource_type} ---")
-                click.echo(yaml_content)
+                if isinstance(yaml_content, str):
+                    click.echo(f"\n--- {resource_type} ---")
+                    click.echo(yaml_content)
+                if isinstance(yaml_content, list):
+                    for item in yaml_content:
+                        for resource_type, yaml_content in item.items():
+                            click.echo(f"\n--- {resource_type} ---")
+                            click.echo(yaml_content)
         else:
             click.echo("✅ 应用下发成功!")
             click.echo(f"应用名称: {result['config']['app_name']}")

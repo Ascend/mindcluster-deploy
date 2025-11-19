@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 
 ### (可选)2. 设置服务框架类型
-当前仅支持ome，如果不设置，默认使用ome
+当前支持ome和aibrix，如果不设置，默认使用ome
 
 ```
 export SERVING_FRAMEWORK=ome
@@ -54,7 +54,7 @@ python main.py deploy -c config/isvc-config.yaml --dry-run
 ```
 
 ## 模板文件说明
-模板路径位于`src/templates/`目录下，用户可以自行修改模板文件，以适应不同的需求。用户可通过查看k8s或ome官方文档，了解模板文件中各个字段的含义。
+模板路径位于`src/templates/`目录下，用户可以自行修改模板文件，以适应不同的需求。用户可通过查看k8s、ome或aibrix官方文档，了解模板文件中各个字段的含义。
 
 ## 安全说明
 ### 注意事项
@@ -64,7 +64,7 @@ python main.py deploy -c config/isvc-config.yaml --dry-run
 该脚本运行过程中，会生成日志文件，日志文件路径位于项目目录下的k8s_deploy_tool.log，日志文件中保存了脚本运行过程中的信息，请用户自行管理日志文件。
 
 ### 环境变量说明
-该脚本支持通过环境变量"SERVING_FRAMEWORK"设置服务框架类型，当前仅支持ome，如果不设置，默认使用ome。
+该脚本支持通过环境变量"SERVING_FRAMEWORK"设置服务框架类型，当前支持ome和aibrix，如果不设置，默认使用ome。
 
 ### 通信矩阵
 
