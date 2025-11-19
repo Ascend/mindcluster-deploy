@@ -143,7 +143,6 @@ class JobManager(ABC):
                 raise Exception(f"删除Service失败: {e.reason}")
             else:
                 logging.info("Service不存在，跳过删除")
-    
 
 
 class ISVCManager(JobManager):
@@ -366,13 +365,253 @@ class ISVCManager(JobManager):
             print("\n")
 
 
+class SSVCManager(JobManager):
+    plural = "StormService"
+    group = "orchestration.aibrix.ai"
+    version = "v1alpha1"
+    app_label_key="storm-service-name"
+    component_label_key="role-name"
+
+    def __init__(self, kubeconfig_path: str = "~/.kube/config"):
+        super().__init__(kubeconfig_path)
+        self.custom_api = None
+        self.deploy_funcs = {
+            'stormservice': self._create_or_update_ssvc,
+            'service': self.create_or_update_service,
+        }
+    
+    def init_k8s_client(self):
+        super().init_k8s_client()
+        try:
+            self.custom_api = self.dynamic_client.resources.get(
+                api_version=f"{self.group}/{self.version}",
+                kind=self.plural,
+            )
+        except Exception as e:
+            logging.error(f"初始化{self.group}/{self.version}/{self.plural}客户端失败: {e}")
+
+    def validate_config(self, config: dict) -> None:
+        """验证配置文件"""
+        super().validate_config(config)
+        if "storm_service" not in config:
+            raise ValueError("缺少storm_service配置")
+        isvc = config["storm_service"]
+        if "model_name" not in isvc:
+            raise ValueError("inference_service缺少model_name字段")
+        if "model_path" not in isvc:
+            raise ValueError("inference_service缺少model_path字段")
+        if "prefill" not in isvc:
+            raise ValueError("inference_service缺少prefill字段")
+        prefill = isvc["prefill"]
+        if "image" not in prefill:
+            raise ValueError("prefill缺少image字段")
+        decode = isvc["decode"]
+        if "image" not in decode:
+            raise ValueError("decode缺少image字段")
+        if "decode" not in isvc:
+            raise ValueError("inference_service缺少decode字段")
+        if "distributed_dp" in isvc:
+            if isvc["distributed_dp"] != "true" and isvc["distributed_dp"] != "false":
+                raise ValueError("distributed_dp字段值只能是true或false")
+            if isvc["distributed_dp"] == "true" and "routing" not in isvc:
+                raise ValueError("distributed_dp为\"true\", inference_service缺少routing字段")
+        
+    def render_template(self, config) -> dict:
+        """渲染模板"""
+        logging.info("渲染模板...")
+        rendered_templates = self.template_engine.render_template("aibrix/stormservice.yaml.j2", config)
+        logging.info("渲染stormservice模板完成")
+        rendered_templates.update({"sever_services": []})
+        self._render_svc_template("prefill", config, rendered_templates)
+        self._render_svc_template("decode", config, rendered_templates)
+        return rendered_templates
+    
+    def _render_svc_template(self, role_name, config, rendered_templates):
+        storm_service = config["storm_service"]
+        sever_services = rendered_templates["sever_services"]
+        inst = storm_service[role_name]
+        replicas = inst.get("replicas", 1)
+        pg_size = inst.get("podGroupSize", 1)
+        dp_size = inst.get("dp_size", 1)
+        dp_size_local = dp_size // pg_size
+        distributed_dp = storm_service.get("distributed_dp", "true")
+        
+        config["distributed_dp"] = distributed_dp
+        app_name = config["app_name"]
+        config["role_name"] = role_name
+        for role_index in range(replicas):
+            config["role_index"] = role_index
+            service_name  = f"{app_name}-{role_name}-{role_index}"
+            config["service_name"] = service_name
+            if distributed_dp == "false":
+                if pg_size > 1:
+                    config["pg_index"] = 0
+                logging.info(f"渲染{service_name}模板, replicas={replicas}, pg_size={pg_size}, dp_size={dp_size}, dp_size_local={dp_size_local}, distributed_dp={distributed_dp}")
+                sever_services.append(self.template_engine.render_template("aibrix/server_service.yaml.j2", config))
+            else:
+                config["dp_size_local"] = dp_size_local
+                for pg_index in range(pg_size):
+                    if pg_size > 1:
+                        config["pg_index"] = pg_index
+                        config["service_name"] = f"{service_name}-{pg_index}"
+                    logging.info(f"渲染{service_name}模板, replicas={replicas}, pg_size={pg_size}, dp_size={dp_size}, dp_size_local={dp_size_local}, distributed_dp={distributed_dp}")
+                    sever_services.append(self.template_engine.render_template("aibrix/server_service.yaml.j2", config))
+        config.pop("role_index", None)
+        config.pop("pg_index", None)
+        config.pop("dp_size_local", None)
+        config.pop("role_name", None)
+    
+    def deploy_app(self, rendered_templates: dict, namespace: str) -> dict:
+        """部署应用到Kubernetes集群"""
+        self.init_k8s_client()
+        logging.info("部署到Kubernetes集群...")
+        results = {}
+        for _, yaml_content in rendered_templates.items():
+            self._deploy_component(yaml_content, namespace, results)                
+        return results
+    
+    def _deploy_component(self, yaml_content, namespace: str, results: dict) -> dict:
+        if isinstance(yaml_content, str):
+            yaml_documents = list(yaml.safe_load_all(yaml_content))
+            for doc in yaml_documents:
+                if not doc:
+                    continue
+                
+                kind = doc.get('kind', '').lower()
+                name = doc['metadata']['name']
+                logging.info(f"创建资源: kind={kind}, name={name}, namespace={namespace}")
+
+                deploy_func = self.deploy_funcs.get(kind)
+                if not deploy_func:
+                    logging.warning(f"不支持的资源类型: {kind}")
+                    continue           
+                results[f"{kind}/{name}"] = deploy_func(doc, namespace)
+        if isinstance(yaml_content, list):
+            for item in yaml_content:
+                for _, value in item.items():
+                    self._deploy_component(value, namespace, results)
+
+    def delete_app(self, app_name: str, namespace: str = "default"):
+        """删除应用"""
+        self.init_k8s_client()
+        logging.info(f"删除应用: namespace={namespace}, name={app_name}")
+        self._delete_ssvc(app_name, namespace)
+        self.delete_service(app_name, namespace)
+        self._wait_for_deletion(app_name, namespace)
+
+    def delete_service(self, service_name: str, namespace: str):
+        """删除Service资源"""
+        self.init_k8s_client()
+        label_selector = f"{self.app_label_key}={service_name}"
+        try:
+            service_list = self.core_v1.list_namespaced_service(namespace=namespace, label_selector=label_selector)
+            if not service_list.items:
+                print(f"在命名空间 '{namespace}' 中未找到标签为 '{label_selector}' 的 Service。")
+                return
+        except ApiException as e:
+            print(f"获取 Service 列表时发生 API 异常: {e}")
+            return
+
+        logging.info(f"删除Service资源: namespace={namespace}, name={service_name}")
+        for service in service_list.items:
+            super().delete_service(service.metadata.name, namespace)
+
+    def show_app_status(self, app_name: str, namespace: str = "default") -> Dict:
+        """显示应用状态"""
+        self.init_k8s_client()
+        self._show_ssvc_status(app_name, namespace)
+        self._show_pods_status(app_name, namespace)
+
+    def _create_or_update_ssvc(self, isvc_manifest: dict, namespace: str) -> dict:
+        logging.info(f"创建StormService资源: namespace={namespace}, name={isvc_manifest['metadata']['name']}")
+        try:
+            result = self.custom_api.create(body=isvc_manifest)
+        except ApiException as e:
+            if e.status != 409:  
+                raise Exception(f"创建StormService失败: {e}")
+            try:
+                flag = input("资源已存在，确认是否更新[y/n]: ")
+                if flag.lower() == 'n':
+                    return {}
+                logging.info(f"更新StormService资源: namespace={namespace}, name={isvc_manifest['metadata']['name']}")
+                result = self.custom_api.patch(
+                    name=isvc_manifest['metadata']['name'],
+                    namespace=namespace,
+                    body=isvc_manifest,
+                    content_type="application/merge-patch+json")     
+            except ApiException as e:
+                raise Exception(f"更新StormService失败: {e}")
+        return result
+    
+    def _delete_ssvc(self, isvc_name: str, namespace: str):
+        logging.info(f"删除StormService资源: namespace={namespace}, name={isvc_name}")
+        try:
+            self.custom_api.delete(name=isvc_name, namespace=namespace)
+        except ApiException as e:
+            if e.status != 404:
+                raise Exception(f"删除StormService失败: {e.reason}")
+            else:
+                logging.info("StormService不存在，跳过删除")
+    
+    def _wait_for_deletion(self, app_name: str, namespace: str, timeout: int = 300):
+        """等待资源完全删除"""
+        import time
+        
+        start_time = time.time()
+        label_selector = f"{self.app_label_key}={app_name}"
+        
+        while time.time() - start_time < timeout:
+            # 检查是否还有Pod在运行
+            pods = self.core_v1.list_namespaced_pod(
+                namespace=namespace, 
+                label_selector=label_selector
+            )
+            
+            if not pods.items:
+                logging.info("所有资源已成功删除")
+                return
+            
+            logging.info(f"等待资源删除... 剩余Pod数量: {len(pods.items)}")
+            time.sleep(5)
+        
+        raise TimeoutError("资源删除超时")
+    
+    def _get_ssvc(self, app_name: str, namespace: str) -> dict:
+        try:
+            isvc = self.custom_api.get(namespace=namespace, name=app_name)
+            return isvc
+        except ApiException as e:
+            raise Exception(f"获取StormService失败: {e.reason}")
+    
+    def _show_ssvc_status(self, app_name: str, namespace: str = "default"):
+        isvc = self._get_ssvc(app_name, namespace)
+        print(f"=== StormService 状态 ===")
+        print_dict(isvc.status.to_dict())
+        print("\n")
+
+    def _show_pods_status(self, app_name: str, namespace: str = "default"):
+        pods = self.list_pods(namespace=namespace, label_selector=f"{self.app_label_key}={app_name}")
+        pod_component = {}
+        for pod in pods:
+            component = pod.metadata.labels.get(self.component_label_key, "unknown")
+            if component not in pod_component:
+                pod_component[component] = []
+            pod_component[component].append(pod)
+        
+        for component, pods in pod_component.items():
+            print(f"=== {component} Pods 状态 ===")
+            print_pod_table(pods, wide=True)
+            print("\n")
+
+
 class ManagerFactory:
     @staticmethod
     def create(kubeconfig_path: str = "~/.kube/config") -> JobManager:
         """根据环境变量创建JobManager实例"""
         cr_type = os.getenv("SERVING_FRAMEWORK", "ome")
-
         if cr_type == "ome":
             return ISVCManager(kubeconfig_path=kubeconfig_path)
+        elif cr_type == "aibrix":
+            return SSVCManager(kubeconfig_path=kubeconfig_path)
         else:
             raise ValueError("Unknown serving framework")

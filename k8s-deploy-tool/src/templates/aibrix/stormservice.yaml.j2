@@ -1,0 +1,261 @@
+apiVersion: orchestration.aibrix.ai/v1alpha1
+kind: StormService
+metadata:
+  name: "{{ app_name }}"
+  {% if app_namespace is defined %}
+  namespace: "{{ app_namespace | default("default") }}"
+  {% endif %}
+spec:
+  replicas: 1
+  updateStrategy:
+    type: "InPlaceUpdate"
+  stateful: true
+  selector:
+    matchLabels:
+      app: "{{ app_name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ app_name }}"
+    spec:
+      roles:
+        {% set prefill = storm_service.prefill %}
+        {% set decode = storm_service.decode %}
+        - name: "prefill"
+          replicas: {{ prefill.replicas }}
+          podGroupSize: {{ prefill.podGroupSize }}
+          stateful: true
+          template:
+            metadata:
+              {% if prefill.annotations is defined %}
+              annotations:
+                {% for key, value in prefill.annotations.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              labels:
+                model.aibrix.ai/name: "{{ storm_service.model_name }}"
+                model.aibrix.ai/port: "8000"
+                model.aibrix.ai/engine: "vllm"
+                {% if prefill.labels is defined %}
+                {% for key, value in prefill.labels.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+                {% endif %}
+            spec:
+              schedulerName: volcano
+              {% if prefill.nodeSelector is defined %}
+              nodeSelector:
+                {% for key, value in prefill.nodeSelector.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              containers:
+                - name: prefill
+                  image: {{ prefill.image }}
+                  workingDir: /scripts
+                  command: ["/bin/bash", "-c"]
+                  args:
+                    - bash start_server.sh
+                  env:
+                    - name: POD_IP
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: "status.podIP"
+                    - name: DISTRIBUTED_DP
+                      value: "{{ storm_service.distributed_dp | default("true") }}"
+                    - name: PREFILL_DP_SIZE
+                      value: "{{ prefill.dp_size | default(1) }}"
+                    - name: PREFILL_TP_SIZE
+                      value: "{{ prefill.tp_size | default(1) }}"
+                    - name: DECODE_DP_SIZE
+                      value: "{{ decode.dp_size | default(1) }}"
+                    - name: DECODE_TP_SIZE
+                      value: "{{ decode.tp_size | default(1) }}"
+                    - name: PREFILL_NUM
+                      value: "{{ prefill.replicas | default(1) }}"
+                    - name: DECODE_NUM
+                      value: "{{ decode.replicas | default(1) }}"
+                    - name: MODEL_NAME
+                      value: "{{ storm_service.model_name }}"
+                    - name: MODEL_PATH
+                      value: "{{ storm_service.model_path }}"
+                  volumeMounts:
+                    - name: model
+                      mountPath: /mnt/models
+                    - mountPath: /dev/shm
+                      name: shared-mem
+                    - name: scripts
+                      mountPath: /scripts
+                    - name: hccn
+                      mountPath: /etc/hccn.conf
+                  resources:
+                    limits:
+                      "huawei.com/Ascend910": {{ prefill.npu_num | default(1) }}
+                    requests:
+                      "huawei.com/Ascend910": {{ prefill.npu_num | default(1) }}
+              volumes:
+                - name: model
+                  hostPath:
+                    path: /mnt/models
+                    type: Directory
+                - emptyDir:
+                    medium: Memory
+                  name: shared-mem
+                - name: scripts
+                  hostPath:
+                    path: /scripts
+                - name: hccn
+                  hostPath:
+                    path: /etc/hccn.conf                    
+        - name: decode
+          replicas: {{ decode.replicas }}
+          podGroupSize: {{ decode.podGroupSize }}
+          stateful: true
+          template:
+            metadata:
+              {% if decode.annotations is defined %}
+              annotations:
+                {% for key, value in decode.annotations.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              labels:
+                model.aibrix.ai/name: "{{ storm_service.model_name }}"
+                model.aibrix.ai/port: "8000"
+                model.aibrix.ai/engine: vllm
+                {% if decode.labels is defined %}
+                {% for key, value in decode.labels.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+                {% endif %}
+            spec:
+              schedulerName: volcano
+              {% if decode.nodeSelector is defined %}
+              nodeSelector:
+                {% for key, value in decode.nodeSelector.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              containers:
+                - name: decode
+                  image: {{ decode.image }}
+                  command: ["/bin/bash", "-c"]
+                  workingDir: /scripts
+                  args:
+                    - bash start_server.sh
+                  env:
+                    - name: POD_IP
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: "status.podIP"
+                    - name: DISTRIBUTED_DP
+                      value: "{{ storm_service.distributed_dp | default("true") }}"
+                    - name: PREFILL_DP_SIZE
+                      value: "{{ prefill.dp_size | default(1) }}"
+                    - name: PREFILL_TP_SIZE
+                      value: "{{ prefill.tp_size | default(1) }}"
+                    - name: DECODE_DP_SIZE
+                      value: "{{ decode.dp_size | default(1) }}"
+                    - name: DECODE_TP_SIZE
+                      value: "{{ decode.tp_size | default(1) }}"
+                    - name: PREFILL_NUM
+                      value: "{{ prefill.replicas | default(1) }}"
+                    - name: DECODE_NUM
+                      value: "{{ decode.replicas | default(1) }}"
+                    - name: MODEL_NAME
+                      value: "{{ storm_service.model_name }}"
+                    - name: MODEL_PATH
+                      value: "{{ storm_service.model_path }}"
+                  volumeMounts:
+                    - name: model
+                      mountPath: /mnt/models
+                    - mountPath: /dev/shm
+                      name: shared-mem
+                    - name: scripts
+                      mountPath: /scripts
+                    - name: hccn
+                      mountPath: /etc/hccn.conf
+                  resources:
+                    limits:
+                      "huawei.com/Ascend910": "{{ decode.npu_num | default(1) }}"
+                    requests:
+                      "huawei.com/Ascend910": "{{ decode.npu_num | default(1) }}"
+              volumes:
+                - name: model
+                  hostPath:
+                    path: /mnt/models
+                    type: Directory
+                - emptyDir:
+                    medium: Memory
+                  name: shared-mem
+                - name: scripts
+                  hostPath:
+                    path: /scripts
+                - name: hccn
+                  hostPath:
+                    path: /etc/hccn.conf
+        {% if storm_service.routing is defined %}
+        {% set routing = storm_service.routing %}
+        - name: routing
+          replicas: {{ routing.replicas | default(1) }}
+          stateful: true
+          template:
+            metadata:
+              {% if routing.annotations is defined %}
+              annotations:
+                {% for key, value in routing.annotations.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              labels:
+                {% if routing.labels is defined %}
+                {% for key, value in routing.labels.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+            spec:
+              {% if routing.nodeSelector is defined %}
+              nodeSelector:
+                {% for key, value in routing.nodeSelector.items() %}
+                {{ key }}: "{{ value }}"
+                {% endfor %}
+              {% endif %}
+              containers:
+              - name: router
+                image: {{ routing.image }}
+                workingDir: /scripts
+                command: [ "/bin/bash", "-c" ]
+                args:
+                  - bash start_proxy.sh
+                env:
+                - name: POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: "status.podIP"
+                - name: DISTRIBUTED_DP
+                  value: "{{ storm_service.distributed_dp | default("true") }}"
+                - name: PREFILL_NUM
+                  value: "{{ prefill.replicas | default(1) }}"
+                - name: PREFILL_POD
+                  value: "{{ prefill.podGroupSize | default(1) }}"
+                - name: PREFILL_DP_SIZE
+                  value: "{{ prefill.dp_size | default(1) }}"
+                - name: DECODE_NUM
+                  value: "{{ decode.replicas | default(1) }}"
+                - name: DECODE_POD
+                  value: "{{ decode.podGroupSize | default(1) }}"
+                - name: DECODE_DP_SIZE
+                  value: "{{ decode.dp_size | default(1) }}"
+                - name: SERVER_PORT
+                  value: "{{ routing.server_port | default(8080) }}"
+                - name: PROXY_PORT
+                  value: "{{ routing.server_port | default(8080) }}"
+                volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+              volumes:
+              - name: scripts
+                hostPath:
+                  path: /scripts
+        {% endif %}
