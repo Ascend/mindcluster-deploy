@@ -55,6 +55,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.hostIP
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
           - name: INCLUSTER_FLAG                # whether training task run on multi nodes. If yes, set value to True, otherwise False
             value: "True"
           # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
