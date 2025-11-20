@@ -51,6 +51,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.hostIP
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
           - name: mindx-dls-test        # The value must be the same as that of Jobname.
             valueFrom:
               fieldRef:

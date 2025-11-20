@@ -43,8 +43,8 @@ function get_server_id()
 {
     local key="server_id"
     local srv_id=$(cat ${RANK_TABLE_FILE} |awk -F ',' '{for(i=1;i<=NF;i++){print $i}}' | grep -w $key| sed 's/":/-/g'|
-                  cut -d "-" -f2 | sed 's/"//g'| sed 's/}//g' | sed 's/]//g'| awk '{print FNR ":" $1}' |
-                  grep -w ${XDL_IP} | awk -F ":" '{print $1}')
+                  sed 's/"//g'| sed 's/}//g' | sed 's/]//g'| awk '{print FNR ":" $1}' |
+                  grep -w ${POD_UID} | awk -F ":" '{print $1}' | head -1)
     if [[ -z $srv_id || $srv_id -lt 1 ]];then
         return 1
     fi
@@ -54,7 +54,7 @@ function get_server_id()
 
 function get_server_id_0_ip()
 {
-    local key="server_id"
+    local key="host_ip"
     local first_server_ip=$(cat ${RANK_TABLE_FILE} |awk -F ',' '{for(i=1;i<=NF;i++){print $i}}' | grep -w $key|
                           head -1 | sed 's/":/-/g'| cut -d "-" -f2 | sed 's/"//g'| sed 's/}//g' | sed 's/]//g' )
     echo ${first_server_ip}

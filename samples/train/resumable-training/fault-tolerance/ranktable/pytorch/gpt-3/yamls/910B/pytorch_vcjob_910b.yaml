@@ -80,6 +80,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.hostIP
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
           - name: framework
             value: "PyTorch"
           - name: ASCEND_VISIBLE_DEVICES                       # used by ascend-docker-runtime

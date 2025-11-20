@@ -301,7 +301,7 @@ class ResetWorker:
     def _init_local_ranks(rank_table_path: str) -> list:
         local_rank_list = []
         server_list_key = "server_list"
-        server_id_key = "server_id"
+        server_id_key = "host_ip"
         device_key = "device"
         rank_id_key = "rank_id"
         rank_table_content = get_file_info(rank_table_path)
