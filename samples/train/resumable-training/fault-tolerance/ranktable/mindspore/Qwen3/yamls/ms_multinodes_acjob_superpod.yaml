@@ -119,11 +119,11 @@ spec:
             - name: code
               nfs: # 此处是通过NFS方式挂载代码，请根据实际情况修改path
                 server: 127.0.0.1
-                path: "/data/atlas_dls/public/code/Qwen3_for_MS_code/"
+                path: "/data/atlas_dls/public/code/QWEN3_for_MS_code/"
             - name: data
               nfs: # 此处是通过NFS方式挂载数据集，请根据实际情况修改path
                 server: 127.0.0.1
-                path: "/data/atlas_dls/public/code/Qwen3_for_MS_code/dataset"
+                path: "/data/atlas_dls/public/code/QWEN3_for_MS_code/dataset"
             - name: ascend-driver
               hostPath:
                 path: /usr/local/Ascend/driver
@@ -211,11 +211,11 @@ spec:
             - name: code
               nfs: # 此处是通过NFS方式挂载代码，请根据实际情况修改path
                 server: 127.0.0.1
-                path: "/data/atlas_dls/public/code/Qwen3_for_MS_code/"
+                path: "/data/atlas_dls/public/code/QWEN3_for_MS_code/"
             - name: data
               nfs: # 此处是通过NFS方式挂载数据集，请根据实际情况修改path
                 server: 127.0.0.1
-                path: "/data/atlas_dls/public/code/Qwen3_for_MS_code/dataset"
+                path: "/data/atlas_dls/public/code/QWEN3_for_MS_code/dataset"
             - name: ascend-driver
               hostPath:
                 path: /usr/local/Ascend/driver
