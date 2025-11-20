@@ -1,5 +1,5 @@
 
-app_name: "llm-service"                            # 应用名称，必填
+app_name: "my-test"                            # 应用名称，必填
 app_namespace: "default"                 # 应用命名空间，选填，默认值为"default"
 
 storm_service:                                     # 推理服务配置，下属字段至少存在一个
@@ -16,7 +16,8 @@ storm_service:                                     # 推理服务配置，下属
     annotations:                                   # prefill实例使用的注解，选填, 
       sp-block: "16"
     labels:                                        # prefill实例使用的标签，选填
-      fault-rescheduling: "force"
+      fault-scheduling: "force"
+      pod-rescheduling: "on"  
     nodeSelector:                                  # prefill实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
   decode:                                          # decode实例配置，下属字段至少存在一个
@@ -29,16 +30,15 @@ storm_service:                                     # 推理服务配置，下属
     annotations:                                   # decode实例使用的注解，选填,
       sp-block: "32"    
     labels:                                        # decode实例使用的标签，选填
-      fault-rescheduling: "force"            
+      fault-scheduling: "force"
     nodeSelector:                                  # decode实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
   routing:                                         # routing实例配置，选填，如果每个实例对外提供服务的端口不只一个，需要配置routing实例
     replicas: 1
     image: "vllm-ascend:test"
-    server_port: 8080
     annotations:                                   # decode实例使用的注解，选填,
       sp-block: "1"    
     labels:                                        # decode实例使用的标签，选填
-      fault-rescheduling: "force"            
+      fault-scheduling: "force"            
     nodeSelector:                                  # decode实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
