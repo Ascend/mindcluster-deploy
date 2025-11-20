@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ service_name }}
+  namespace: {{ app_namespace | default("default") }}
+  labels:
+    storm-service-name: {{ app_name }}
+    role-name: {{ role_name }}
+    stormservice.orchestration.aibrix.ai/role-replica-index: "{{ role_index }}"
+    {% if pg_index is defined %}
+    stormservice.orchestration.aibrix.ai/pod-group-index: "{{ pg_index }}"
+    {% endif %}
+spec:
+  type: "ClusterIP"
+  selector:
+    storm-service-name: {{ app_name }}
+    role-name: {{ role_name }}
+    stormservice.orchestration.aibrix.ai/role-replica-index: "{{ role_index }}"
+    {% if pg_index is defined %}
+    stormservice.orchestration.aibrix.ai/pod-group-index: "{{ pg_index }}"
+    {% endif %}
+  ports:
+    {% if distributed_dp == "false" %}
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    {% else %}
+    {% for i in range(dp_size_local) %}
+    - port: {{ 8080 + i }}
+      targetPort: {{ 8080 + i }}
+      protocol: TCP
+      name: http-{{ i }}
+    {% endfor %}
+    {% endif %}

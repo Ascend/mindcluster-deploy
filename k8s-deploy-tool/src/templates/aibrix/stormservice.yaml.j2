@@ -35,7 +35,7 @@ spec:
               {% endif %}
               labels:
                 model.aibrix.ai/name: "{{ storm_service.model_name }}"
-                model.aibrix.ai/port: "8000"
+                model.aibrix.ai/port: "8080"
                 model.aibrix.ai/engine: "vllm"
                 {% if prefill.labels is defined %}
                 {% for key, value in prefill.labels.items() %}
@@ -122,7 +122,7 @@ spec:
               {% endif %}
               labels:
                 model.aibrix.ai/name: "{{ storm_service.model_name }}"
-                model.aibrix.ai/port: "8000"
+                model.aibrix.ai/port: "8080"
                 model.aibrix.ai/engine: vllm
                 {% if decode.labels is defined %}
                 {% for key, value in decode.labels.items() %}
@@ -247,10 +247,6 @@ spec:
                   value: "{{ decode.podGroupSize | default(1) }}"
                 - name: DECODE_DP_SIZE
                   value: "{{ decode.dp_size | default(1) }}"
-                - name: SERVER_PORT
-                  value: "{{ routing.server_port | default(8080) }}"
-                - name: PROXY_PORT
-                  value: "{{ routing.server_port | default(8080) }}"
                 volumeMounts:
                 - name: scripts
                   mountPath: /scripts
