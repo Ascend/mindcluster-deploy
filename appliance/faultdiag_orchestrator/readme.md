@@ -1,13 +1,13 @@
 
-# 故障诊断调度适配层
+# 故障诊断调度适配层参考设计
 
-自动故障诊断系统是一个用于分布式环境中自动收集、解析和诊断系统日志的工具集。该系统主要由两个核心组件构成：调度器（Orchestrator）和清洗器（Parse Agent）。
+此工具旨在一体机场景下提供调度故障诊断组件、双机日志清洗以及汇聚诊断的能力。其主要由两个组件构成：调度器（Orchestrator）和清洗器（Parse Agent）。
 
 ## 系统架构
 
 ### Orchestrator 调度器
 
-调度器是整个系统的中央控制器，负责协调整个故障诊断流程。
+调度器负责协调整个故障诊断流程。
 
 #### 主要功能：
 
@@ -16,18 +16,18 @@
    - 包含本地和远程工作节点信息
    - 定义需要分析的日志路径
 
-2. **组件安装**
-   - 在本地和远程节点自动安装诊断组件
-   - 支持国内版（ascend-fd）和国际版（alan-fd）诊断包
-   - 验证安装结果
-
-3. **环境检测**
+2. **环境检测**
    - 检测是单节点还是双节点环境
    - 验证远程节点的可访问性
    - 验证SSH免密登录配置
 
+3. **组件安装**
+   - 在本地和远程节点自动安装诊断组件
+   - 支持通过wheel包安装ascend-fd和alan-fd
+   - 验证安装结果
+
 4. **日志处理协调**
-   - 部署清洗器到各个节点
+   - 部署清洗器（parse_agent）到各个节点
    - 协调日志收集和解析过程
    - 收集解析结果
 
@@ -51,21 +51,17 @@
 #### 主要功能：
 
 1. **多源日志收集**
-   - 进程日志 (process_log)
-   - 设备日志 (device_log)，包括华为昇腾NPU日志
-   - 主机操作系统日志 (host_log)
-   - 训练日志 (train_log)
+   - CANN应用类日志与CANN系统类日志
+   - 设备日志，若未事先提供则自动采集（需要root权限）
+   - 主机操作系统日志
+   - 训练日志
 
 2. **灵活部署**
-   - 可以独立运行或由调度器协调运行
-   - 支持多种运行模式
+   - 由调度器调度在本地运行，或者通过SSH部署到远程节点运行
 
 3. **远程结果传输**
    - 通过SSH将解析结果发送回调排器
-   - 支持临时目录管理和安全传输
-
-4. **组件集成**
-   - 与不同的诊断组件配合工作 (ascend-fd, alan-fd)
+   - 支持临时目录管理
 
 #### 运行模式：
 
@@ -82,26 +78,33 @@
 {
     "local_worker": {
         "user": "user1",
-        "ip": "192.168.1.10"
+        "ip": "x.x.x.x"
     },
     "remote_worker": {
         "user": "user2", 
-        "ip": "192.168.1.11"
+        "ip": "x.x.x.x"
     },
-    "whl_pkg_path": "/path/to/diagnostic-package.whl",
+    "whl_pkg_path": "/path/to/Ascend-mindxdl-faultdiag_{version}-{arch}.whl",
     "log_path": {
-        "process_log": "/var/log/process.log",
-        "device_log": "/var/log/device/",
+        "process_log": "/path/to/process_log",
+        "device_log": "/path/to/device_log",
         "host_log": "/var/log/",
-        "train_log": "/var/log/train.log"
+        "train_log": "/path/to/train_log"
     }
 }
 ```
+- 节点信息，若配置错误，将执行单节点清洗
+  - `local_worker`：本地工作节点信息，包含用户名和IP地址
+  - `remote_worker`：远程工作节点信息，包含用户名和IP地址
+- 组件wheel包
+  - `whl_pkg_path`：诊断组件的wheel包路径
+- 日志路径，默认两个工作节点各个日志路径均相同
+  - `log_path`：日志路径，包含CANN应用类日志与CANN系统类日志、设备日志、主机操作系统日志和训练日志
 
 ### 运行命令
 
 ```bash
-python3 orchestrator.py -i config.json -o /output/path
+python3 orchestrator.py -i user_config.json -o /output/path
 ```
 
 系统会自动完成以下操作：
@@ -113,15 +116,16 @@ python3 orchestrator.py -i config.json -o /output/path
 
 ## 环境要求
 
-- Python 3.x
+- Python 3.7+
+- 支持使用pip3
+- ply已安装，若未安装，请使用`pip3 install ply`安装
 - SSH访问权限（用于远程节点通信）
-- 对应的诊断wheel包（ascend-fd或alan-fd）
-- 各节点上的必要日志文件
+- 已安装故障诊断组件或者对应的wheel包以供安装
 
 ## 注意事项
 
 1. 确保所有工作节点具有相同的目录结构，否则清洗器可能会失败
 2. 远程节点需要配置SSH免密登录
 3. 确保指定的日志路径在对应节点上存在且可访问
-4. 网络连接稳定，特别是对于双节点环境
-5. 对于大文件（超过100MB），系统会拒绝处理以防止内存问题
+4. 双节点使用场景需要网络连接稳定
+5. 未提供设备日志路径且配置了root权限时，清洗器会尝试自动采集设备日志
