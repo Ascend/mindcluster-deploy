@@ -35,6 +35,8 @@
 
 # 目录说明
 ``` 
+├─appliance
+│  └─faultdiag_orchestrator                # 故障诊断调度适配层工具
 ├─mindie                                   # mindie任务日志采集脚本
 ├─npu_collector                            # npu相关信息采集脚本
 │  └─log_rotate_sample
