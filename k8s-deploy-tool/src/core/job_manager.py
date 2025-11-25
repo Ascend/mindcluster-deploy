@@ -446,6 +446,7 @@ class SSVCManager(JobManager):
             if distributed_dp == "false":
                 if pg_size > 1:
                     config["pg_index"] = 0
+                    config["service_name"] = f"{service_name}-0"
                 logging.info(f"渲染{service_name}模板, replicas={replicas}, pg_size={pg_size}, dp_size={dp_size}, dp_size_local={dp_size_local}, distributed_dp={distributed_dp}")
                 sever_services.append(self.template_engine.render_template("aibrix/server_service.yaml.j2", config))
             else:
