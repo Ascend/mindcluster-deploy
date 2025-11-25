@@ -1,4 +1,3 @@
-
 # 故障诊断调度适配层参考设计
 
 此工具旨在一体机场景下提供调度故障诊断组件、双机日志清洗以及汇聚诊断的能力。其主要由两个组件构成：调度器（Orchestrator）和清洗器（Parse Agent）。
@@ -70,6 +69,11 @@
 
 ## 使用方法
 
+
+### 文件准备
+
+下载orchestrator.py与parse_agent.py，并将它们放在同一目录下
+
 ### 配置文件示例
 
 创建一个JSON格式的配置文件：
@@ -94,8 +98,8 @@
 }
 ```
 - 节点信息，若配置错误，将执行单节点清洗
-  - `local_worker`：本地工作节点信息，包含用户名和IP地址
-  - `remote_worker`：远程工作节点信息，包含用户名和IP地址
+  - `local_worker`：本地工作节点信息，包含免密登录的用户和IP地址
+  - `remote_worker`：远程工作节点信息，包含免密登录的用户和IP地址
 - 组件wheel包
   - `whl_pkg_path`：诊断组件的wheel包路径
 - 日志路径，默认两个工作节点各个日志路径均相同
@@ -129,3 +133,4 @@ python3 orchestrator.py -i user_config.json -o /output/path
 3. 确保指定的日志路径在对应节点上存在且可访问
 4. 双节点使用场景需要网络连接稳定
 5. 未提供设备日志路径且配置了root权限时，清洗器会尝试自动采集设备日志
+6. orchestrator.py和parse_agent.py需要放在同一目录下才能正常工作
