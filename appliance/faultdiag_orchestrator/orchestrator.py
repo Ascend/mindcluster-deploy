@@ -401,6 +401,11 @@ def install_remote(cfg: Config, component: str):
         raise ValueError(f"[Remote] {whl_pkg_name} architecture '{whl_arch}' "
                          f"does not match '{remote_arch}' of {cfg.remote_worker.ip}")
 
+    MessageHandler.info(
+        f"[Remote] Creating directory {REMOTE_AGENT_PATH} on {cfg.remote_worker.ip} if it doesn't exist ..."
+    )
+    ssh_run(cfg.remote_worker, f"mkdir -p {REMOTE_AGENT_PATH}")
+
     MessageHandler.info(f"[Remote] Copying {whl_pkg_name} to {cfg.remote_worker.ip}...")
     run(f"scp {cfg.whl_pkg_path} {cfg.remote_worker.user}@{cfg.remote_worker.ip}:{remote_path}")
 
@@ -510,7 +515,9 @@ def create_parse_agent_cmd(cfg: Config, cmd: str, output_path: str) -> str:
 
 def parse_remote(agent_path: str, cfg: Config, cmd: str, remote_path: str):
     """Parse logs on remote host."""
-    MessageHandler.info(f"[Remote] Creating directory on {cfg.remote_worker.ip} ...")
+    MessageHandler.info(
+        f"[Remote] Creating directory {REMOTE_AGENT_PATH} on {cfg.remote_worker.ip} if it doesn't exist ..."
+    )
     ssh_run(cfg.remote_worker, f"mkdir -p {REMOTE_AGENT_PATH}")
     MessageHandler.info(f"[Remote] Deploying parse agent to {cfg.remote_worker.ip} ...")
     run(f"scp {agent_path} {cfg.remote_worker.user}@{cfg.remote_worker.ip}:{remote_path}")
