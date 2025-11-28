@@ -42,11 +42,14 @@ function check_hccl_status()
 function get_server_id()
 {
     local key="server_id"
-    local srv_id=$(cat ${RANK_TABLE_FILE} |awk -F ',' '{for(i=1;i<=NF;i++){print $i}}' | grep -w $key| sed 's/":/-/g'|
-                  sed 's/"//g'| sed 's/}//g' | sed 's/]//g'| awk '{print FNR ":" $1}' |
-                  grep -w ${POD_UID} | awk -F ":" '{print $1}' | head -1)
+    local srv_id=$(cat ${RANK_TABLE_FILE} | awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'${key}'\042/){print $(i+1)}}}' |
+                   awk '{print FNR ":" $1}' | grep ${POD_UID} | awk -F ":" '{print $1}' | head -1)
     if [[ -z $srv_id || $srv_id -lt 1 ]];then
-        return 1
+        srv_id=$(cat ${RANK_TABLE_FILE} | awk -F"[,:}]" '{for(i=1;i<=NF;i++){if($i~/'${key}'\042/){print $(i+1)}}}' |
+                           awk '{print FNR ":" $1}' | grep ${XDL_IP} | awk -F ":" '{print $1}' | head -1)
+        if [[ -z $srv_id || $srv_id -lt 1 ]];then
+            return 1
+        fi
     fi
     srv_id=$(($srv_id-1))
     echo ${srv_id}
