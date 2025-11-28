@@ -340,15 +340,6 @@ def detect_package_type(pkg_name: str):
         return PackageType.UNKNOWN
 
 
-def detect_package_arch(pkg_name: str):
-    """Detect wheel package architecture."""
-    if "aarch64" in pkg_name:
-        return "aarch64"
-    if "x86_64" in pkg_name:
-        return "x86_64"
-    return "unknown"
-
-
 def verify_install(pkg_type: PackageType):
     """Verify installation result."""
     verification_strategy = {
@@ -384,10 +375,6 @@ def install_local(cfg: Config):
 
 def install_remote(cfg: Config, component: str):
     """Install package on remote host."""
-    whl_pkg_name = os.path.basename(cfg.whl_pkg_path)
-    remote_path = os.path.join(REMOTE_AGENT_PATH, whl_pkg_name)
-    whl_arch = detect_package_arch(whl_pkg_name)
-
     MessageHandler.info(f"Checking the availability of the {component} on {cfg.remote_worker.ip}")
     try:
         ssh_run(cfg.remote_worker, f"which {component}")
@@ -396,16 +383,16 @@ def install_remote(cfg: Config, component: str):
     except (subprocess.CalledProcessError, RuntimeError):
         pass
 
-    remote_arch = ssh_run(cfg.remote_worker, "uname -m", capture=True)
-    if whl_arch and whl_arch not in remote_arch:
-        raise ValueError(f"[Remote] {whl_pkg_name} architecture '{whl_arch}' "
-                         f"does not match '{remote_arch}' of {cfg.remote_worker.ip}")
+    if not cfg.whl_pkg_path:
+        raise ValueError("[Remote] No whl package path specified and there are no pre-installed components")
 
     MessageHandler.info(
         f"[Remote] Creating directory {REMOTE_AGENT_PATH} on {cfg.remote_worker.ip} if it doesn't exist ..."
     )
     ssh_run(cfg.remote_worker, f"mkdir -p {REMOTE_AGENT_PATH}")
 
+    whl_pkg_name = os.path.basename(cfg.whl_pkg_path)
+    remote_path = os.path.join(REMOTE_AGENT_PATH, whl_pkg_name)
     MessageHandler.info(f"[Remote] Copying {whl_pkg_name} to {cfg.remote_worker.ip}...")
     run(f"scp {cfg.whl_pkg_path} {cfg.remote_worker.user}@{cfg.remote_worker.ip}:{remote_path}")
 
@@ -422,7 +409,7 @@ def install_remote(cfg: Config, component: str):
 def install(cfg: Config) -> str:
     """Install components."""
     if not cfg.whl_pkg_path and not is_installed("ascend-fd") and not is_installed("alan-fd"):
-        raise ValueError("No whl package path specified and there are no component that is pre-installed")
+        raise ValueError("No whl package path specified and there are no pre-installed components")
 
     component = install_local(cfg)
     if cfg.dual_worker_scene:
