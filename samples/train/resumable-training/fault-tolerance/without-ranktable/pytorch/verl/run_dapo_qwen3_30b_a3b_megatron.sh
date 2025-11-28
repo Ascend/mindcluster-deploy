@@ -38,7 +38,7 @@ NPU_PER_NODE=${NPU_PER_NODE:-16}
 
 WORKING_DIR=${WORKING_DIR:-"${PWD}"}
 MODEL_PATH="/home/qwen30b/Qwen3-30B-A3B-Instruct-2507" # modify according to actual situation
-MCORE_MODEL_PATH="/home/qwen30b/Qwen3-30B-A3B-GPU" # modify according to actual situation
+MCORE_MODEL_PATH="/home/qwen30b/Qwen3-30B-A3B-Instruct-Mcore" # modify according to actual situation
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/verl"}
 CKPTS_DIR="/home/qwen30b/ckpt" # modify according to actual situation
 
