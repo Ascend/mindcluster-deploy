@@ -550,7 +550,6 @@ def orchestrate():
     """Main orchestration function."""
     args = command_line()
     data = read_cfg(args.input)
-
     cfg = validation(data)
     component = install(cfg)
     parse_results_path = os.path.join(args.output, "parse_results")
