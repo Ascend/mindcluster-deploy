@@ -53,7 +53,7 @@ Agent）。
 1. **多源日志收集**
     - CANN应用类日志与CANN系统类日志
     - 设备日志，若未事先提供则自动采集（需要root权限）
-    - 主机操作系统日志
+    - 操作系统日志，若未提供则指定为`/var/log`（需要root权限）
     - 训练日志
 
 2. **灵活部署**
@@ -104,7 +104,7 @@ Agent）。
 - 组件wheel包
     - `whl_pkg_path`：诊断组件的wheel包路径
 - 日志路径，默认两个工作节点各个日志路径均相同
-    - `log_path`：日志路径，包含CANN应用类日志与CANN系统类日志、设备日志、主机操作系统日志和训练日志
+    - `log_path`：日志路径，包含CANN应用类日志与CANN系统类日志、设备日志、操作系统日志和训练日志
 
 ### 运行命令
 
@@ -135,7 +135,8 @@ python3 orchestrator.py -i user_config.json -o /output/path
 3. 确保指定的日志路径在对应节点上存在且可访问
 4. 双节点使用场景需要网络连接稳定
 5. 未提供设备日志路径且配置了root权限时，清洗器会尝试自动采集设备日志
-6. orchestrator.py和parse_agent.py需要放在同一目录下才能正常工作
+6. 未提供主机操作系统日志路径且配置了root权限时，清洗器会指定路径为`/var/log/`
+7. orchestrator.py和parse_agent.py需要放在同一目录下才能正常工作
 
 ## 常见问题 (FAQ)
 
