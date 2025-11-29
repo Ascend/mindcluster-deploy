@@ -66,6 +66,8 @@ def collect_host_log(log_path):
     """Collect host log data."""
     if log_path:
         return log_path
+    if os.getuid() != 0:
+        return ""
     default_host_log_path = "/var/log"
     if os.path.exists(default_host_log_path):
         return default_host_log_path

@@ -35,7 +35,7 @@ from typing import Optional
 PARSING_TIMEOUT = 600
 DIAGNOSIS_TIMEOUT = 300
 PIP_INSTALL_TIMEOUT = 15
-REMOTE_AGENT_PATH = "/var/faultdiag_parse_agent"
+REMOTE_AGENT_PATH = "~/faultdiag_parse_agent"
 DEFAULT_DIR_MODE = 0o750
 MAX_FILE_SIZE = 100 * 1024 * 1024
 
