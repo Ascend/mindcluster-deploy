@@ -29,7 +29,7 @@ import subprocess
 import sys
 import tempfile
 
-DEFAULT_DIR_MODE = 0o644
+DEFAULT_DIR_MODE = 0o700
 
 
 def command_line():
@@ -105,7 +105,8 @@ def parse(args, logs_data):
         with tempfile.TemporaryDirectory() as temp_dir:
             parse_result_dir = args.remote_ip or "worker-1"
             tmp_parse_result_dir = os.path.join(temp_dir, parse_result_dir)
-            os.makedirs(tmp_parse_result_dir, mode=DEFAULT_DIR_MODE)
+            os.makedirs(tmp_parse_result_dir)
+            os.chmod(tmp_parse_result_dir, DEFAULT_DIR_MODE)
             execute_parse_cmd(cmd, tmp_parse_result_dir)
             return_to_orchestrator(tmp_parse_result_dir, args.master_user, args.master_ip, args.output)
     else:
