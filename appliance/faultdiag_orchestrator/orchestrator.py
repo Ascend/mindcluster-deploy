@@ -458,20 +458,20 @@ def ssh_run(host: HostInfo, cmd, capture=False, timeout=5):
         raise RuntimeError(f"[Remote] Execute command timed out: {cmd}")
 
 
-def validate_remote_availability(host: str, user: str, timeout: int = 1) -> bool:
+def validate_remote_availability(host: str, user: str, timeout: int = 3) -> bool:
     """Validate if remote host is accessible."""
     try:
         execute_cmd(f"ping -c 1 {host}", timeout=timeout)
-    except subprocess.TimeoutExpired:
-        MessageHandler.warning(f"Ping timeout for {host}")
+    except subprocess.TimeoutExpired as timeout_error:
+        MessageHandler.warning(f"Ping timeout for {host}: {timeout_error}")
         return False
     except Exception as e:
         MessageHandler.warning(f"Ping failed for {host}: {e}")
         return False
     try:
         execute_cmd(f"ssh {user}@{host} -o BatchMode=yes echo Check passwordless > /dev/null 2>&1", timeout=timeout)
-    except subprocess.TimeoutExpired:
-        MessageHandler.warning(f"SSH timeout for {user}@{host}")
+    except subprocess.TimeoutExpired as timeout_error:
+        MessageHandler.warning(f"SSH timeout for {user}@{host}: {timeout_error}")
         return False
     except Exception as e:
         MessageHandler.warning(f"Failed to verify passwordless configuration for {user}@{host}: {e}")
