@@ -22,21 +22,35 @@ spec:
         {% set prefill = storm_service.prefill %}
         {% set decode = storm_service.decode %}
         - name: "prefill"
-          replicas: {{ prefill.replicas }}
-          podGroupSize: {{ prefill.podGroupSize }}
+          replicas: {{ prefill.replicas | default(1) }}
+          podGroupSize: {{ prefill.podGroupSize | default(1)}}
           stateful: true
           template:
             metadata:
-              {% if prefill.annotations is defined %}
               annotations:
+                {% if (prefill.podGroupSize | default(1)) > 1 %}
+                huawei.com/schedule_minAvailable: "{{ prefill.podGroupSize | default(1) }}"
+                {% elif (decode.podGroupSize | default(1)) > 1 %}
+                huawei.com/schedule_minAvailable: "{{ prefill.replicas | default(1) }}"
+                {% else %}
+                huawei.com/schedule_minAvailable: "{{ (prefill.replicas | default(1)) + (decode.replicas | default(1))}}"
+                {% endif %}
+                {% if (prefill.podGroupSize | default(1)) == 1 %}
+                huawei.com/recover_policy_path: "pod"
+                {% endif %}
+                {% if prefill.annotations is defined %}
                 {% for key, value in prefill.annotations.items() %}
                 {{ key }}: "{{ value }}"
                 {% endfor %}
-              {% endif %}
+                {% endif %}
               labels:
                 model.aibrix.ai/name: "{{ storm_service.model_name }}"
                 model.aibrix.ai/port: "8080"
                 model.aibrix.ai/engine: "vllm"
+                fault-scheduling: "force"
+                {% if (prefill.podGroupSize | default(1)) == 1 %}
+                pod-rescheduling: "on"
+                {% endif %}
                 {% if prefill.labels is defined %}
                 {% for key, value in prefill.labels.items() %}
                 {{ key }}: "{{ value }}"
@@ -109,21 +123,35 @@ spec:
                   hostPath:
                     path: /etc/hccn.conf                    
         - name: decode
-          replicas: {{ decode.replicas }}
-          podGroupSize: {{ decode.podGroupSize }}
+          replicas: {{ decode.replicas | default(1) }}
+          podGroupSize: {{ decode.podGroupSize | default(1)}}
           stateful: true
           template:
             metadata:
-              {% if decode.annotations is defined %}
               annotations:
+                {% if (decode.podGroupSize | default(1)) > 1 %}
+                huawei.com/schedule_minAvailable: "{{ decode.podGroupSize | default(1) }}"
+                {% elif (prefill.podGroupSize | default(1)) > 1 %}
+                huawei.com/schedule_minAvailable: "{{ decode.replicas | default(1) }}"
+                {% else %}
+                huawei.com/schedule_minAvailable: "{{ (prefill.replicas | default(1)) + (decode.replicas | default(1))}}"
+                {% endif %}
+                {% if (decode.podGroupSize | default(1)) == 1 %}
+                huawei.com/recover_policy_path: "pod"
+                {% endif %}
+                {% if decode.annotations is defined %}
                 {% for key, value in decode.annotations.items() %}
                 {{ key }}: "{{ value }}"
                 {% endfor %}
-              {% endif %}
+                {% endif %}
               labels:
                 model.aibrix.ai/name: "{{ storm_service.model_name }}"
                 model.aibrix.ai/port: "8080"
                 model.aibrix.ai/engine: vllm
+                fault-scheduling: "force"
+                {% if (decode.podGroupSize | default(1)) == 1 %}
+                pod-rescheduling: "on"
+                {% endif %}
                 {% if decode.labels is defined %}
                 {% for key, value in decode.labels.items() %}
                 {{ key }}: "{{ value }}"

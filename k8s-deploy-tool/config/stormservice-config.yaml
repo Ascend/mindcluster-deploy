@@ -17,7 +17,7 @@ storm_service:                                     # 推理服务配置，下属
       sp-block: "16"
     labels:                                        # prefill实例使用的标签，选填
       fault-scheduling: "force"
-      pod-rescheduling: "on"  
+      subHeathyStrategy: "forceExit"
     nodeSelector:                                  # prefill实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
   decode:                                          # decode实例配置，下属字段至少存在一个
@@ -31,14 +31,15 @@ storm_service:                                     # 推理服务配置，下属
       sp-block: "32"    
     labels:                                        # decode实例使用的标签，选填
       fault-scheduling: "force"
+      subHeathyStrategy: "forceExit"
     nodeSelector:                                  # decode实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
   routing:                                         # routing实例配置，选填，如果每个实例对外提供服务的端口不只一个，需要配置routing实例
     replicas: 1
     image: "vllm-ascend:test"
-    annotations:                                   # decode实例使用的注解，选填,
+    annotations:                                   # routing实例使用的注解，选填,
       sp-block: "1"    
-    labels:                                        # decode实例使用的标签，选填
+    labels:                                        # routing实例使用的标签，选填
       fault-scheduling: "force"            
-    nodeSelector:                                  # decode实例使用的节点选择器，选填
+    nodeSelector:                                  # routing实例使用的节点选择器，选填
       accelerator-type: module-a3-16-super-pod
