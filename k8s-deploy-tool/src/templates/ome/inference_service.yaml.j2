@@ -16,12 +16,14 @@ spec:
   {% endif %}
   {%- set engine = inference_service.engine %}
   engine:
-    {% if engine.labels is defined %}
     labels:
+      fault-scheduling: "force"
+      pod-rescheduling: "on"
+      {% if engine.labels is defined %}
       {% for key, value in engine.labels.items() %}
       {{ key }}: "{{ value }}"
       {% endfor %}
-    {% endif %}
+      {% endif %}
     {% if engine.annotations is defined %}
     annotations:
       {% for key, value in engine.annotations.items() %}
@@ -133,14 +135,16 @@ spec:
   decoder:
     minReplicas: {{ decoder.min_replicas }}
     maxReplicas: {{ decoder.max_replicas }}
-    {% if decoder.labels is defined %}
     labels:
+      fault-scheduling: "force"
+      pod-rescheduling: "on"
+      {% if decoder.labels is defined %}
       {% for key, value in decoder.labels.items() %}
       {{ key }}: "{{ value }}"
       {% endfor %}
-    {% endif %}
+      {% endif %}
     {% if decoder.annotations is defined %}
-    annotations:
+    annotations: 
       {% for key, value in decoder.annotations.items() %}
       {{ key }}: "{{ value }}"
       {% endfor %}
