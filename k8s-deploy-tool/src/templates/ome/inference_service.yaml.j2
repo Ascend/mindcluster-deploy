@@ -24,8 +24,9 @@ spec:
       {{ key }}: "{{ value }}"
       {% endfor %}
       {% endif %}
-    {% if engine.annotations is defined %}
     annotations:
+      huawei.com/schedule_minAvailable: "{{ engine.min_replicas }}"
+    {% if engine.annotations is defined %}
       {% for key, value in engine.annotations.items() %}
       {{ key }}: "{{ value }}"
       {% endfor %}
@@ -143,8 +144,9 @@ spec:
       {{ key }}: "{{ value }}"
       {% endfor %}
       {% endif %}
+    annotations:
+      huawei.com/schedule_minAvailable: "{{ decoder.min_replicas }}"
     {% if decoder.annotations is defined %}
-    annotations: 
       {% for key, value in decoder.annotations.items() %}
       {{ key }}: "{{ value }}"
       {% endfor %}
