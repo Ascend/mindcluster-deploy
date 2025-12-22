@@ -234,6 +234,8 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
+      - name: TORCH_DEVICE_BACKEND_AUTOLOAD
+        value: "0"
       image: sglang:11.1.1
       name: sglang-router
       ports:

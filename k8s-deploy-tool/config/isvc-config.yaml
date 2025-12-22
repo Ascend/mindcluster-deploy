@@ -6,7 +6,7 @@ inference_service:                           # 推理服务配置，下属字段
   runtime_name: "llama-3-1-8b-rt"            # 运行时名称，选填，如果不填，ome-controller-manager会根据model_name选取集群中存在的runtime
   engine:                                    # engine配置，下属字段至少存在一个。engine、decoder、router中的字段会被合并到runtime中，并且此处设置字段优先级更高
     min_replicas: 1                          # 最小副本数，选填，默认值为1，当前要求大于0
-    max_replicas: 1                          # 最大副本数，选填，默认值为1，要求大于等于
+    max_replicas: 1                          # 最大副本数，选填，默认值为1，当前要求必须等同于min_replicas的数量
     pod_num: 1                               # 实例pod数量，选填，默认值为1
     image: "sglang:11.11.1"                  # 容器镜像，选填，如果不填，会使用runtime中配置的image
     npu_num: 1                               # 每个容器中的npu数量，选填，默认值为1
