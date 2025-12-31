@@ -1,18 +1,18 @@
-# mindxdl-deploy
+# MindCluster-Samples
 -   [免责声明](#免责声明)
 -   [代码仓配套](#代码仓版本配套)
 -   [支持的产品形态](#支持的产品形态)
 -   [目录说明](#目录说明)
 
 # 免责声明
-本代码仓库提供[Mind Cluster]示例代码和脚本, 不建议直接用于生产环境.
+本代码仓库提供[MindCluster]示例代码和脚本, 不建议直接用于生产环境.
 
 **免责范围**:
 - 使用本仓库示例代码和脚本导致的任何直接/间接损失(包括数据损坏、业务中断、安全漏洞等);
 - 因用户自行修改代码、集成三方组件或配置不当引发的问题和风险;
 - 本项目及贡献者不承担任何法律责任及赔偿义务.
 
-[Mind Cluster]: https://www.hiascend.com/document/detail/zh/mindcluster/600/clustersched/introduction/schedulingsd/mxdlug_201.html
+[MindCluster]: https://www.hiascend.com/document/detail/zh/mindcluster/600/clustersched/introduction/schedulingsd/mxdlug_201.html
 
 # 代码仓版本配套
 | Mind Cluster版本               | mindxdl-deploy仓配套分支 |
