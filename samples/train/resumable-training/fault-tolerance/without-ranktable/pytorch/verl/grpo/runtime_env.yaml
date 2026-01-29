@@ -1,0 +1,11 @@
+# examples_npu/config/runtime_env.yaml
+working_dir: ./
+excludes: ["/.git/"]
+env_vars:
+  HCCL_EXEC_TIMEOUT: "7200"
+  HCCL_CONNECT_TIMEOUT: "7200"
+  VLLM_USE_V1: "1"
+  HCCL_IF_BASE_PORT: "23999"
+  HCCL_ASYNC_ERROR_HANDLING: "0"
+  P2P_HCCL_BUFFSIZE: "20"
+  VLLM_DISABLE_COMPILE_CACHE: "0"
