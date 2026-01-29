@@ -1,0 +1,133 @@
+apiVersion: mindxdl.gitee.com/v1
+kind: AscendJob
+metadata:
+  name: mindspeed-rl
+  labels:
+    framework: pytorch
+    fault-scheduling: "force"                 # must be force
+    pod-rescheduling: "on"
+    fault-retry-times: "100"
+    ring-controller.atlas: ascend-910b
+    subHealthyStrategy: "ignore"
+  annotations:
+    sp-block: "32"
+spec:
+  schedulerName: volcano
+  runPolicy:
+    schedulingPolicy:
+      minAvailable: 3
+      queue: default
+  successPolicy: AllWorkers
+  replicaSpecs:
+    Master:
+      replicas: 1                             # Master must be force 1
+      restartPolicy: Never                    # must be Never
+      template:
+        metadata:
+          labels:
+            ring-controller.atlas: ascend-910b
+          annotations:
+            huawei.com/skip-ascend-plugin: enabled
+        spec:
+          terminationGracePeriodSeconds: 0
+          automountServiceAccountToken: false
+          nodeSelector:
+            host-arch: huawei-arm
+          hostNetwork: false
+          containers:
+            - name: ascend                    # cannot modify
+              image: verl:v1            # image name, modify according to actual situation
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+              args:                           # args, modify according to actual situation
+                - |
+                  cd /data/code/verl; bash start_grpo.sh;
+              ports:
+                - containerPort: 6666         # modify according to actual situation
+                  name: ray-port
+                - containerPort: 8888         # modify according to actual situation
+                  name: ray-dash-port
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: localtime
+                  mountPath: /etc/localtime
+                - name: code
+                  mountPath: /data/code
+                - name: dataset
+                  mountPath: /data/dataset
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
+            - name: code
+              hostPath:
+                path: /data/code
+            - name: dataset
+              hostPath:
+                path: /data/dataset
+    Worker:
+      replicas: 2
+      restartPolicy: Never  # 配置为Never
+      template:
+        metadata:
+          labels:
+            ring-controller.atlas: ascend-910b
+        spec:
+          terminationGracePeriodSeconds: 0
+          automountServiceAccountToken: false
+          nodeSelector:
+            host-arch: huawei-arm
+          hostNetwork: false
+          containers:
+            - name: ascend                    # cannot modify
+              image:  verl:v1           # image name, modify according to actual situation
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/bash
+                - -c
+              args:                           # modify according to actual situation
+                - |
+                  cd /data/code/verl; bash start_grpo.sh;
+              resources:
+                limits:
+                  huawei.com/Ascend910: 16
+                requests:
+                  huawei.com/Ascend910: 16
+              volumeMounts:
+                - name: ascend-driver
+                  mountPath: /usr/local/Ascend/driver
+                - name: dshm
+                  mountPath: /dev/shm
+                - name: localtime
+                  mountPath: /etc/localtime
+                - name: code
+                  mountPath: /data/code
+                - name: dataset
+                  mountPath: /data/dataset
+          volumes:
+            - name: ascend-driver
+              hostPath:
+                path: /usr/local/Ascend/driver
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            - name: localtime
+              hostPath:
+                path: /etc/localtime
+            - name: code
+              hostPath:
+                path: /data/code
+            - name: dataset
+              hostPath:
+                path: /data/dataset
