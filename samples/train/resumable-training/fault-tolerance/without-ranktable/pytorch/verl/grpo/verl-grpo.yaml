@@ -10,6 +10,7 @@ metadata:
     ring-controller.atlas: ascend-910b
     subHealthyStrategy: "ignore"
   annotations:
+    huawei.com/schedule.filter.faultLevel: "RestartRequest"
     sp-block: "32"
 spec:
   schedulerName: volcano
