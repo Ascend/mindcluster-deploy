@@ -6,6 +6,7 @@ metadata:
     framework: pytorch
     ring-controller.atlas: ascend-910b
     fault-scheduling: "force"
+    fault-retry-times: "10"
     huawei.com/scheduler.softShareDev.aicoreQuota: "50" # soft share device core quota, unit: %
     huawei.com/scheduler.softShareDev.hbmQuota: "2048" # soft share device hbm quota, unit: MB
     huawei.com/scheduler.softShareDev.policy: "fixed-share" # 1:fixed-share 2:elastic 3:best-effort
