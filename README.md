@@ -55,8 +55,7 @@
 │  │  │  │      └─910b
 │  │  │  └─without-ranktable
 │  │  │      ├─mindspore
-│  │  │      ├─pytorch
-│  │  │      └─tensorflow
+│  │  │      └─pytorch
 │  │  └─resumable-training
 │  │      ├─fault-rescheduling
 │  │      │  ├─withoutRanktable
@@ -70,8 +69,6 @@
 │  │      │  │  │  │  └─yamls
 │  │      │  │  │  └─resnet50
 │  │      │  │  │      └─yamls
-│  │      │  │  └─tensorflow
-│  │      │  │      └─yamls
 │  │      │  └─withRanktable
 │  │      │      ├─mindspore
 │  │      │      │  ├─lenet5
