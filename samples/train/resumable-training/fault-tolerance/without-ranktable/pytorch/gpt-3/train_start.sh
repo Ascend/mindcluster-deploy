@@ -9,7 +9,7 @@ DLS_USER_HOME_DIR="$(
 )"
 cd "$DLS_USER_HOME_DIR" || exit 1
 
-# set pythonpath(especially for tensorflow)
+# set pythonpath
 export PYTHONPATH="$DLS_USER_JOB_DIR:$PYTHONPATH"
 export PYTHONUNBUFFERED=1
 
