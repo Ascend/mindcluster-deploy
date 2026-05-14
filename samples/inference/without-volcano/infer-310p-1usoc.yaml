@@ -36,8 +36,6 @@ spec:
           mountPath: /etc/sys_version.conf
         - name: aicpu
           mountPath: /usr/lib64/aicpu_kernels
-        - name: tfso
-          mountPath: /usr/lib64/libtensorflow.so
       volumes:
       - name: hiai-driver
         hostPath:
@@ -64,7 +62,4 @@ spec:
       - name: aicpu
         hostPath:
           path: /usr/lib64/aicpu_kernels
-      - name: tfso
-        hostPath:
-          path: /usr/lib64/libtensorflow.so
       restartPolicy: OnFailure

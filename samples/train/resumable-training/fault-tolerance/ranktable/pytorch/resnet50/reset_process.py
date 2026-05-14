@@ -529,7 +529,7 @@ def is_valid_input_param(args) -> bool:
         return False
     if args.mode != 'common' and args.mode != 'elastic':
         return False
-    valid_frameworks = ['ms', 'mindspore', 'tf', 'tensorflow', 'pt', 'pytorch']
+    valid_frameworks = ['ms', 'mindspore', 'pt', 'pytorch']
     if args.frame not in valid_frameworks:
         return False
     return True

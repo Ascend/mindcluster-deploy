@@ -9,7 +9,7 @@ DLS_USER_HOME_DIR="$(
 )"
 cd "$DLS_USER_HOME_DIR" || exit 1
 
-# set pythonpath(especially for tensorflow)
+# set pythonpath
 export PYTHONPATH="$DLS_USER_JOB_DIR:$PYTHONPATH"
 export PYTHONUNBUFFERED=1
 
@@ -234,28 +234,6 @@ if [[ "${server_count}" -ge 1 ]]; then
       else
           taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --gpu=${i} --addr=${MASTER_ADDR} --world-size=${WORLD_SIZE} --rank=${RANK} &>> ${output_url}/device_${RANK_ID}.log &
           check_return_code
-      fi
-    done
-  elif [ "${framework}" == "Tensorflow" ]; then
-    # CPU核心数
-    core_num=`cat /proc/cpuinfo | grep "processor" | wc -l`
-    device_each_server=$((device_count / server_count))
-    rank_start=$((device_each_server * server_id))
-    for ((i = $((device_each_server - 1)); i >= 0; i--)); do
-      get_env_for_multi_card_job
-      export DEVICE_INDEX=${RANK_ID}
-      logger "start training for rank ${RANK_ID}, device ${DEVICE_ID}"
-      # 设置绑定范围，如:0-11
-      core_range="$((i*${core_num}/${device_each_server}))-$(((i+1)*${core_num}/${device_each_server}-1))"
-      if [ "${i}" -eq 0 ]; then
-          taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --model_dir=${output_url}/models/device_${DEVICE_INDEX}/ && tee ${output_url}/device_${RANK_ID}.log
-          check_return_code
-          if [[ $@ =~ need_freeze ]]; then
-            taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${freeze_cmd} --model_dir=${output_url}/models/device_${DEVICE_INDEX}/ && ${output_url}/device_${RANK_ID}.log
-            check_return_code
-          fi
-      else
-          taskset -c ${core_range} ${DLS_PROGRAM_EXECUTOR} ${boot_file_path}${boot_file} ${train_param} --model_dir=${output_url}/models/device_${DEVICE_INDEX}/ &>> ${output_url}/device_${RANK_ID}.log &
       fi
     done
   elif [ "${framework}" == "MindSpore" ]; then
