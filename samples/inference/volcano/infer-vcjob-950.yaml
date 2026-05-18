@@ -9,7 +9,7 @@ metadata:
   annotations:
     sp-block: "8"
     ra-block: "8"
-    huawei.com/scheduler-policy: "chip8-node8-ra64-sp"
+    huawei.com/schedule_policy: "chip8-node8-ra64-sp"
 spec:
   minAvailable: 1                       # The value of minAvailable is 1 in a single-node scenario, only set as 1 when infer task
   schedulerName: volcano                # Use the Volcano scheduler to schedule jobs.
