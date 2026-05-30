@@ -33,6 +33,8 @@ metadata:
   labels:
     ring-controller.atlas: ascend-910b   # The value must be the same as the label in ConfigMap and cannot be changed.
     fault-scheduling: "grace"
+  annotations:
+    huawei.com/schedule_policy: "chip8-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   minAvailable: 1                       # The value of minAvailable is 1 in a single-node scenario and N in an N-node distributed scenario.
   schedulerName: volcano                # Use the Volcano scheduler to schedule jobs.
@@ -122,9 +124,6 @@ spec:
           - name: reset-config
             mountPath: /user/restore/reset/config
             readOnly: true
-        nodeSelector:
-          host-arch: huawei-arm                       # Configure the label based on the actual job.
-          accelerator-type: module-910b-8
         volumes:
         - name: ascend-910-config
           configMap:

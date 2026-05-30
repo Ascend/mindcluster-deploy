@@ -19,6 +19,8 @@ metadata:
   labels:
     ring-controller.atlas: ascend-910   # The value must be the same as the label in ConfigMap and cannot be changed.
     fault-scheduling: "force"
+  annotations:
+    huawei.com/schedule_policy: "chip1-node2"  # Please configure according to the actual AI chip topology of the task
 spec:
   minAvailable: 1                       # The value of minAvailable is 1 in a single-node scenario and N in an N-node distributed scenario.
   schedulerName: volcano                # Use the Volcano scheduler to schedule jobs.
@@ -61,7 +63,7 @@ spec:
                 fieldPath: metadata.uid
           - name: framework
             value: "PyTorch"
-          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
           # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
           - name: ASCEND_VISIBLE_DEVICES
             valueFrom:
@@ -97,9 +99,6 @@ spec:
             mountPath: /dev/shm
           - name: localtime
             mountPath: /etc/localtime
-        nodeSelector:
-          host-arch: huawei-arm                       # Configure the label based on the actual job.
-          accelerator-type: card
         volumes:
         - name: ascend-910-config
           configMap:

@@ -47,8 +47,6 @@ spec:
             volumeMounts:
               - name: localtime                  # The container time must be the same as the host time.
                 mountPath: /etc/localtime
-        nodeSelector:
-          host-arch: huawei-arm                  # Configure the label based on the actual job.
         volumes:
         - name: localtime
           hostPath:

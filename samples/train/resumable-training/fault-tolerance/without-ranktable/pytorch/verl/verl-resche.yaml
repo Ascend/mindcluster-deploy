@@ -28,8 +28,6 @@ spec:
         spec:
           terminationGracePeriodSeconds: 60
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
           hostNetwork: true
           containers:
             - name: ascend                    # cannot modify
@@ -80,8 +78,6 @@ spec:
         spec:
           terminationGracePeriodSeconds: 60
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
           hostNetwork: true
           containers:
             - name: ascend                    # cannot modify

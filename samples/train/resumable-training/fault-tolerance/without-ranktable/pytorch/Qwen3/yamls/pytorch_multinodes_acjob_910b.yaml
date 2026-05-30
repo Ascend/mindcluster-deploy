@@ -28,6 +28,7 @@ metadata:
   annotations:
     wait-reschedule-timeout: "270" # 进程级恢复等待故障节点重调度的超时时间，默认270秒，取值范围30-270。进程级恢复和弹性训练均开启时，则等待此时间后若故障节点调度成功，则进行进程级恢复，否则触发弹性训练
     recover-strategy: "retry,recover,dump,exit,elastic-training" # 开启step重计算、进程级恢复、临终遗言、进程退出和弹性训练
+    huawei.com/schedule_policy: "chip8-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -56,13 +57,10 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16
           hostNetwork: true
           containers:
           - name: ascend # do not modify
-            image: mindspeed-dl:v1         # trainning framework image， which can be modified
+            image: mindspeed-dl:v1         # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
               - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
@@ -89,9 +87,9 @@ spec:
               - /bin/bash
               - -c
             args:
-              - | 
-                cd /job/code; 
-                chmod +x scripts/train_start.sh; 
+              - |
+                cd /job/code;
+                chmod +x scripts/train_start.sh;
                 bash scripts/train_start.sh
             ports:                          # default value containerPort: 2222 name: ascendjob-port if not set
               - containerPort: 2222         # determined by user
@@ -160,13 +158,10 @@ spec:
                         values:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16
           hostNetwork: true
           containers:
           - name: ascend # do not modify
-            image: mindspeed-dl:v1                # trainning framework image， which can be modified
+            image: mindspeed-dl:v1                # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
               - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
@@ -242,5 +237,3 @@ spec:
           - name: localtime
             hostPath:
               path: /etc/localtime
-
-

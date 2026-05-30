@@ -14,7 +14,7 @@ spec:
     matchLabels:
       app: infers
   template:
-    metadata: 
+    metadata:
       labels:
          app: infers
          host-arch: huawei-arm         # Select the os arch. If the os arch is arm, change it to huawei-x86.
@@ -22,8 +22,6 @@ spec:
     spec:
       schedulerName: volcano
       automountServiceAccountToken: false
-      nodeSelector:
-        host-arch: huawei-arm           # Select the os arch. If the os arch is x86, change it to huawei-x86.
       containers:
       - image: ubuntu-infer:v1                  # Inference image name
         imagePullPolicy: IfNotPresent
@@ -33,7 +31,7 @@ spec:
         - name: ASCEND_VISIBLE_DEVICES
           valueFrom:
             fieldRef:
-              fieldPath: metadata.annotations['huawei.com/npu']              
+              fieldPath: metadata.annotations['huawei.com/npu']
         resources:
           requests:
             huawei.com/npu: 8

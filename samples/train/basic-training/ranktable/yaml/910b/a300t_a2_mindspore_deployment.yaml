@@ -30,6 +30,8 @@ spec:
         app: mindspore
         ring-controller.atlas: ascend-910b
         deploy-name: mindx-dls-test  # The value must be the same as that of Deployment name.
+      annotations:
+        huawei.com/schedule_policy: "chip1-node2"  # Please configure according to the actual AI chip topology of the task
     spec:
       affinity:
         podAntiAffinity:
@@ -43,9 +45,6 @@ spec:
               topologyKey: kubernetes.io/hostname
       schedulerName: volcano         # Use the Volcano scheduler to schedule jobs.
       automountServiceAccountToken: false
-      nodeSelector:
-        host-arch: huawei-arm        # Configure the label based on the actual job.
-        accelerator-type: card-910b-2
       containers:
         - image: mindspore:b035      # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent
@@ -65,7 +64,7 @@ spec:
                 fieldPath: metadata.uid
           - name: framework
             value: "MindSpore"
-          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
           # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
           - name: ASCEND_VISIBLE_DEVICES
             valueFrom:
@@ -90,7 +89,7 @@ spec:
           - name: data
             mountPath: /job/data
           - name: output
-            mountPath: /job/output                    
+            mountPath: /job/output
           - name: ascend-driver
             mountPath: /usr/local/Ascend/driver
           - name: localtime

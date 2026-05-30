@@ -122,8 +122,6 @@ spec:
           - name: reset-config
             mountPath: /user/restore/reset/config
             readOnly: true
-        nodeSelector:
-          host-arch: huawei-arm                       # Configure the label based on the actual job.
         volumes:
         - name: ascend-910-config
           configMap:

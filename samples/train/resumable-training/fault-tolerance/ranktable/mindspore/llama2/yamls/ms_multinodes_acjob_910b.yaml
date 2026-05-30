@@ -37,6 +37,7 @@ metadata:
     ring-controller.atlas: ascend-910b
   annotations:
     recover-strategy: "retry"
+    huawei.com/schedule_policy: "chip8-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano    # work when enableGangScheduling is true
   runPolicy:
@@ -56,9 +57,6 @@ spec:
         spec:
           terminationGracePeriodSeconds: 360
           automountServiceAccountToken: false
-          nodeSelector:                        # modify according to the actual situation
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8
           hostNetwork: true
           containers:
           - name: ascend # do not modify
@@ -151,9 +149,6 @@ spec:
         spec:
           terminationGracePeriodSeconds: 360
           automountServiceAccountToken: false
-          nodeSelector: # modify according to the actual situation
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8
           hostNetwork: true
           containers:
             - name: ascend # do not modify
