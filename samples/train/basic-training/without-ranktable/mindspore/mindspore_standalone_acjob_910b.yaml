@@ -5,6 +5,8 @@ metadata:
   labels:
     framework: mindspore
     ring-controller.atlas: ascend-910b
+  annotations:
+    huawei.com/schedule_policy: "chip8-node16"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano    # work when enableGangScheduling is true
   runPolicy:
@@ -22,15 +24,12 @@ spec:
             ring-controller.atlas: ascend-910b
         spec:
           automountServiceAccountToken: false
-          nodeSelector:                        # modify according to the actual situation
-            host-arch: huawei-x86
-            accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
             image: mindspore-test:latest       # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
-            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
             # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
             - name: ASCEND_VISIBLE_DEVICES
               valueFrom:
@@ -83,5 +82,3 @@ spec:
           - name: localtime
             hostPath:
               path: /etc/localtime
-
-

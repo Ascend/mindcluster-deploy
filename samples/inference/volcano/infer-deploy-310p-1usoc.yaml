@@ -10,7 +10,7 @@ spec:
     matchLabels:
       app: infers
   template:
-    metadata: 
+    metadata:
       labels:
          app: infers
          host-arch: huawei-arm
@@ -20,7 +20,6 @@ spec:
       schedulerName: volcano
       automountServiceAccountToken: false
       nodeSelector:
-        host-arch: huawei-arm
         servertype: soc                 # Cannot be delete. And node should be labeled with this label.
       containers:
       - image: ubuntu-infer:v1                  # Inference image name

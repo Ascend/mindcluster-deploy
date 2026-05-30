@@ -6,6 +6,8 @@ metadata:
     framework: pytorch
     ring-controller.atlas: ascend-910b
     fault-scheduling: "force"
+  annotations:
+    huawei.com/schedule_policy: "chip8-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -33,12 +35,9 @@ spec:
                           - default-infer-test-pytorch-910b
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16
           containers:
             - name: ascend # do not modify
-              image: pytorch-test:latest         # trainning framework image， which can be modified
+              image: pytorch-test:latest         # training framework image， which can be modified
               imagePullPolicy: IfNotPresent
               env:
                 - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
@@ -109,12 +108,9 @@ spec:
                           - default-infer-test-pytorch-910b
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module-910b-8 # depend on your device model, 910bx8 is module-910b-8 ,910bx16 is module-910b-16
           containers:
             - name: ascend # do not modify
-              image: pytorch-test:latest                # trainning framework image， which can be modified
+              image: pytorch-test:latest                # training framework image， which can be modified
               imagePullPolicy: IfNotPresent
               env:
                 - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
@@ -166,5 +162,3 @@ spec:
             - name: localtime
               hostPath:
                 path: /etc/localtime
-
-

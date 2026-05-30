@@ -25,6 +25,8 @@ metadata:
     ring-controller.atlas: ascend-910b
     fault-scheduling: force
     fault-retry-times: "10000"
+  annotations:
+    huawei.com/schedule_policy: "chip8-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -56,7 +58,6 @@ spec:
           #         topologyKey: kubernetes.io/hostname
           nodeSelector:
             accelerator: huawei-Ascend910
-            accelerator-type: module-910b-8
             # hardware-type: "800I-A2-32G"
           terminationGracePeriodSeconds: 10
           automountServiceAccountToken: false
@@ -203,7 +204,6 @@ spec:
           #         topologyKey: kubernetes.io/hostname
           nodeSelector:
             accelerator: huawei-Ascend910
-            accelerator-type: module-910b-8
             # hardware-type: "800I-A2-32G"
           terminationGracePeriodSeconds: 10
           automountServiceAccountToken: false

@@ -5,6 +5,8 @@ metadata:
   labels:
     framework: pytorch
     tor-affinity: "null" #该标签为任务是否使用交换机亲和性调度标签，null或者不写该标签则不适用。large-model-schema表示大模型任务，normal-schema 普通任务
+  annotations:
+    huawei.com/schedule_policy: "chip4-node8"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano   # work when enableGangScheduling is true
   runPolicy:
@@ -29,19 +31,16 @@ spec:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module
           containers:
           - name: ascend # do not modify
-            image: pytorch-test:latest         # trainning framework image， which can be modified
+            image: pytorch-test:latest         # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
               - name: XDL_IP                   # IP address of the physical node, which is used to identify the node where the pod is running
                 valueFrom:
                   fieldRef:
                     fieldPath: status.hostIP
-              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
               # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
               - name: ASCEND_VISIBLE_DEVICES
                 valueFrom:
@@ -110,19 +109,16 @@ spec:
                           - default-test-pytorch
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
-            accelerator-type: module
           containers:
           - name: ascend # do not modify
-            image: pytorch-test:latest                # trainning framework image， which can be modified
+            image: pytorch-test:latest                # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
               - name: XDL_IP                                       # IP address of the physical node, which is used to identify the node where the pod is running
                 valueFrom:
                   fieldRef:
                     fieldPath: status.hostIP
-              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+              # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
           # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
               - name: ASCEND_VISIBLE_DEVICES
                 valueFrom:
@@ -175,5 +171,3 @@ spec:
           - name: localtime
             hostPath:
               path: /etc/localtime
-
-

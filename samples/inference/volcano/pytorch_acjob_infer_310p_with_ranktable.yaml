@@ -33,8 +33,6 @@ spec:
                           - default-infer-test-pytorch-310p
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:
-            host-arch: huawei-arm
           containers:
             - name: ascend # do not modify
               image: pytorch-test:latest         # infer framework image， which can be modified

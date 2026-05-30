@@ -30,8 +30,6 @@ spec:
             mountPath: /usr/local/Ascend/driver
           - name: npu-smi
             mountPath: /usr/local/bin/npu-smi
-        nodeSelector:
-          host-arch: huawei-arm                       # Select the os arch. If the os arch is x86, change it to huawei-x86.
         volumes:
         - name: ascend-driver
           hostPath:

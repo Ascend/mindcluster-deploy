@@ -65,8 +65,8 @@ spec:
         imagePullPolicy: Never
         command: [ "/bin/bash", "-c", "--"]
         # pair firstly
-        args: [ "umask 027;ksys collect -i 5 -c /usr/local/devkit/config_pa.yaml -o /usr/local/devkit/data > /var/log/mindx-dl/npu-exporter/devkit.log 2>&1 
-        & exec npu-exporter -port=8082 -ip=0.0.0.0  -updateTime=5 -textMetricsFilePath=/usr/local/devkit/data/pa_data.json 
+        args: [ "umask 027;ksys collect -i 5 -c /usr/local/devkit/config_pa.yaml -o /usr/local/devkit/data > /var/log/mindx-dl/npu-exporter/devkit.log 2>&1
+        & exec npu-exporter -port=8082 -ip=0.0.0.0  -updateTime=5 -textMetricsFilePath=/usr/local/devkit/data/pa_data.json
                  -logFile=/var/log/mindx-dl/npu-exporter/npu-exporter.log -logLevel=0 -containerMode=docker" ]
         securityContext:
           privileged: true
@@ -142,4 +142,3 @@ spec:
             path: /tmp
         - name: devkit
           emptyDir: {}
-

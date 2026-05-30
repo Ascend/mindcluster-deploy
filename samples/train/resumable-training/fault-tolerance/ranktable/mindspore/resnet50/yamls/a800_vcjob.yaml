@@ -73,7 +73,7 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.uid
-          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
           # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
           - name: ASCEND_VISIBLE_DEVICES
             valueFrom:
@@ -101,8 +101,6 @@ spec:
             mountPath: /usr/local/Ascend/driver
           - name: localtime
             mountPath: /etc/localtime
-        nodeSelector:
-          host-arch: huawei-arm                                # Configure the label based on the actual job.
         volumes:
         - name: ascend-910-config
           configMap:

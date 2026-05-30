@@ -48,8 +48,6 @@ spec:
       hostNetwork: true
       schedulerName: volcano         # Use the Volcano scheduler to schedule jobs.
       automountServiceAccountToken: false
-      nodeSelector:
-        host-arch: huawei-x86        # Configure the label based on the actual job.
       containers:
         - image: torch:b035          # Training framework image, which can be modified.
           imagePullPolicy: IfNotPresent
@@ -69,7 +67,7 @@ spec:
                 fieldPath: metadata.uid
           - name: framework
             value: "PyTorch"
-          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+          # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
           # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
           - name: ASCEND_VISIBLE_DEVICES
             valueFrom:

@@ -34,6 +34,8 @@ metadata:
     framework: mindspore
     fault-scheduling: "grace"
     ring-controller.atlas: ascend-910b
+  annotations:
+    huawei.com/schedule_policy: "chip8-node16"  # Please configure according to the actual AI chip topology of the task
 spec:
   schedulerName: volcano    # work when enableGangScheduling is true
   runPolicy:
@@ -52,9 +54,6 @@ spec:
         spec:
           terminationGracePeriodSeconds: 360
           automountServiceAccountToken: false
-          nodeSelector:                        # modify according to the actual situation
-            host-arch: huawei-x86
-            accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
             image: mindspore-test:latest       # training framework image， which can be modified
@@ -119,15 +118,12 @@ spec:
                           - worker
                   topologyKey: kubernetes.io/hostname
           automountServiceAccountToken: false
-          nodeSelector:                    # modify according to the actual situation
-            host-arch: huawei-x86
-            accelerator-type: module-910b-16
           containers:
           - name: ascend # do not modify
             image: mindspore-test:latest   # training framework image， which can be modified
             imagePullPolicy: IfNotPresent
             env:
-            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler. 
+            # ASCEND_VISIBLE_DEVICES env variable is used by ascend-docker-runtime when in the whole card scheduling scene with volcano scheduler.
             # Please delete it when in the static vNPU scheduling, dynamic vNPU scheduling, volcano without Ascend-volcano-plugin, without volcano scenes.
             - name: ASCEND_VISIBLE_DEVICES
               valueFrom:
@@ -163,11 +159,11 @@ spec:
               readOnly: true
           volumes:
           - name: ranktable
-            hostPath: 
+            hostPath:
               path: /user/mindx-dl/ranktable/default.default-test-mindspore
           - name: reset-config
             hostPath:
-              path: /user/restore/reset/default.reset-config-default-test-mindspore    
+              path: /user/restore/reset/default.reset-config-default-test-mindspore
           - name: code
             nfs:
               server: 127.0.0.1

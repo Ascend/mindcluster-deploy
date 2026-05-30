@@ -8,13 +8,12 @@ spec:
     matchLabels:
       app: infers
   template:
-    metadata: 
+    metadata:
       labels:
          app: infers
     spec:
       schedulerName: volcano
       nodeSelector:
-        host-arch: huawei-arm           # Select the os arch. If the os arch is x86, change it to huawei-x86.
         servertype: soc
       containers:
       - image: ascend-k8sdeviceplugin:v3.0.0                  # Inference image name
